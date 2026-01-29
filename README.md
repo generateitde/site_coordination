@@ -128,6 +128,8 @@ python -m site_coordination.cli reject user@example.com
 - `SITE_COORDINATION_SMTP_HOST`, `SITE_COORDINATION_SMTP_USER`, `SITE_COORDINATION_SMTP_PASSWORD`,
   `SITE_COORDINATION_SMTP_PORT`, `SITE_COORDINATION_SENDER_EMAIL`.
 
+> **Note:** Update the credentials in the `.env` file before using the IMAP/SMTP workflows.
+
 ## Next Steps
 
 - Add a web UI for check-in/check-out (QR entry).
