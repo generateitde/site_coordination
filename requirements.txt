@@ -1,2 +1,10 @@
-# Project currently has no third-party Python dependencies.
-# Add packages here as needed.
+# Core data handling
+numpy>=1.26
+pandas>=2.2
+
+# Plotting / analytics
+matplotlib>=3.8
+seaborn>=0.13
+
+# Database access (SQLite is provided by Python's standard library via sqlite3)
+sqlalchemy>=2.0

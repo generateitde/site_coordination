@@ -4,6 +4,9 @@ Automation of construction site acess
 
 ## Installation
 
+**Requirements**
+- Python 3.11+ (SQLite support is included with Python via the built-in `sqlite3` module)
+
 1. (Optional) Create and activate a virtual environment:
    ```bash
    python -m venv .venv
@@ -13,5 +16,3 @@ Automation of construction site acess
    ```bash
    pip install -r requirements.txt
    ```
-
-> Note: There are currently no third-party Python dependencies listed in `requirements.txt`.
