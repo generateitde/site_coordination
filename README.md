@@ -123,6 +123,7 @@ python -m site_coordination.cli reject user@example.com
 ## Environment Variables
 
 - `SITE_COORDINATION_DB`: SQLite path (default: `site_coordination.sqlite`).
+- `SITE_COORDINATION_ENV`: Optional path to the `.env` file (default: `.env`).
 - `SITE_COORDINATION_IMAP_HOST`, `SITE_COORDINATION_IMAP_USER`, `SITE_COORDINATION_IMAP_PASSWORD`,
   `SITE_COORDINATION_IMAP_MAILBOX`.
 - `SITE_COORDINATION_SMTP_HOST`, `SITE_COORDINATION_SMTP_USER`, `SITE_COORDINATION_SMTP_PASSWORD`,
