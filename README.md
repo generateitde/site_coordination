@@ -201,7 +201,11 @@ The repository includes a small Flask webapp for onsite check-in/check-out workf
    ```bash
    export SITE_COORDINATION_DB=/path/to/site_coordination.sqlite
    ```
-3. Start the webapp:
+3. Start the webapp from the repository root:
+   ```bash
+   python run_check_in_rcs_app.py
+   ```
+   Alternatively:
    ```bash
    python -m site_coordination.check_in_rcs_app
    ```
