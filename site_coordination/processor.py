@@ -14,7 +14,7 @@ class ProcessingResult:
 
 
 def handle_access_request(connection, request: AccessRequest) -> ProcessingResult:
-    """Store an access request with status 'offen'."""
+    """Store an access request with status 'open'."""
 
     record = db.RegistrationRecord(
         email=request.email,
@@ -24,14 +24,14 @@ def handle_access_request(connection, request: AccessRequest) -> ProcessingResul
         project=request.project,
         phone=request.phone,
         activity=request.activity,
-        status="offen",
+        status="open",
     )
     db.insert_registration(connection, record)
     return ProcessingResult(message=f"Registration stored for {request.email}.")
 
 
 def handle_booking_request(connection, request: BookingRequest) -> ProcessingResult:
-    """Store a booking request with status 'zu ueberpruefen'."""
+    """Store a booking request with status 'pending_review'."""
 
     record = db.BookingRecord(
         email=request.email,
@@ -44,7 +44,7 @@ def handle_booking_request(connection, request: BookingRequest) -> ProcessingRes
         outdoor=request.outdoor,
         outdoor_type=request.outdoor_type,
         equipment=request.equipment,
-        status="zu_ueberpruefen",
+        status="pending_review",
     )
     db.insert_booking(connection, record)
     return ProcessingResult(message=f"Booking stored for {request.email}.")

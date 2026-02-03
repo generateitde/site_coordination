@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Manage Bookings</h2>
+    <p class="meta">
+      Filter by any column content and approve or deny pending bookings.
+    </p>
+    <form method="get" class="form form-inline">
+      <label class="field">
+        Filter
+        <input type="text" name="q" value="{{ query }}" placeholder="Search bookings" />
+      </label>
+      <button type="submit" class="button button-secondary">Apply filter</button>
+    </form>
+  </section>
+  <section class="card table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Name</th>
+          <th>Project</th>
+          <th>Timeslot</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in bookings %}
+          <tr>
+            <td>{{ booking.email }}</td>
+            <td>{{ booking.first_name }} {{ booking.last_name }}</td>
+            <td>{{ booking.project }}</td>
+            <td>{{ booking.timeslot_raw }}</td>
+            <td><span class="status">{{ booking.status }}</span></td>
+            <td>
+              {% if booking.status == "pending_review" %}
+                <form method="post" class="inline-actions">
+                  <input type="hidden" name="booking_id" value="{{ booking.id }}" />
+                  <button class="button button-small" name="action" value="approve">
+                    Confirm &amp; notify
+                  </button>
+                  <button class="button button-small button-secondary" name="action" value="deny">
+                    Deny
+                  </button>
+                </form>
+              {% else %}
+                <span class="meta">No action</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="6" class="meta">No bookings found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  <a class="link" href="{{ url_for('bookings') }}">Back to bookings</a>
+{% endblock %}
