@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Login</h2>
+    <form method="post" class="form">
+      <label class="field">
+        <span>E-Mail*</span>
+        <input type="email" name="email" required />
+      </label>
+      <label class="field">
+        <span>Password*</span>
+        <input type="password" name="password" required />
+      </label>
+      <div class="actions">
+        <a class="link" href="mailto:help@site-coordination.local">Kontakt Hilfe</a>
+        <button type="submit" class="button">Login</button>
+      </div>
+    </form>
+  </section>
+{% endblock %}
