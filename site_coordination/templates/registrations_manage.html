@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Manage Registrations</h2>
+    <p class="meta">
+      Filter by any column content and approve or deny open requests. Credentials are sent
+      from the user management page.
+    </p>
+    <form method="get" class="form form-inline">
+      <label class="field">
+        Filter
+        <input type="text" name="q" value="{{ query }}" placeholder="Search registrations" />
+      </label>
+      <button type="submit" class="button button-secondary">Apply filter</button>
+    </form>
+  </section>
+  <section class="card table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Name</th>
+          <th>Affiliation</th>
+          <th>Project</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for registration in registrations %}
+          <tr>
+            <td>{{ registration.email }}</td>
+            <td>{{ registration.first_name }} {{ registration.last_name }}</td>
+            <td>{{ registration.affiliation }}</td>
+            <td>{{ registration.project }}</td>
+            <td><span class="status">{{ registration.status }}</span></td>
+            <td>
+              {% if registration.status == "open" %}
+                <form method="post" class="inline-actions">
+                  <input type="hidden" name="email" value="{{ registration.email }}" />
+                  <button class="button button-small" name="action" value="approve">
+                    Confirm &amp; create user
+                  </button>
+                  <button class="button button-small button-secondary" name="action" value="deny">
+                    Deny
+                  </button>
+                </form>
+              {% else %}
+                <span class="meta">No action</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="6" class="meta">No registrations found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  <a class="link" href="{{ url_for('registrations') }}">Back to registrations</a>
+{% endblock %}

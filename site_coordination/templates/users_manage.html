@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Manage Users</h2>
+    <p class="meta">
+      Filter the users table and send credentials when needed. Each send increments the
+      credentials counter.
+    </p>
+    <form method="get" class="form form-inline">
+      <label class="field">
+        Filter
+        <input type="text" name="q" value="{{ query }}" placeholder="Search users" />
+      </label>
+      <button type="submit" class="button button-secondary">Apply filter</button>
+    </form>
+  </section>
+  <section class="card table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Name</th>
+          <th>Affiliation</th>
+          <th>Project</th>
+          <th>Phone</th>
+          <th>Credentials sent</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+          <tr>
+            <td>{{ user.email }}</td>
+            <td>{{ user.first_name }} {{ user.last_name }}</td>
+            <td>{{ user.affiliation }}</td>
+            <td>{{ user.project }}</td>
+            <td>{{ user.phone }}</td>
+            <td>{{ user.credentials_sent }}</td>
+            <td>
+              <form method="post" class="inline-actions">
+                <input type="hidden" name="email" value="{{ user.email }}" />
+                <button class="button button-small" name="action" value="send">
+                  Send credentials
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" class="meta">No users found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  <a class="link" href="{{ url_for('index') }}">Back to dashboard</a>
+{% endblock %}
