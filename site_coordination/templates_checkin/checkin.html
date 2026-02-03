@@ -3,18 +3,18 @@
 {% block content %}
   <section class="card">
     <h2>Check-in / Check-out</h2>
-    <p class="meta">Angemeldet als: {{ email }}{% if project %} · Projekt: {{ project }}{% endif %}</p>
+    <p class="meta">Signed in as: {{ email }}{% if project %} · Project: {{ project }}{% endif %}</p>
     <form method="post" class="form">
       <label class="field">
-        <span>Präsenz vor Ort*</span>
+        <span>On-site presence*</span>
         <select name="presence" required>
-          <option value="" disabled selected>Bitte wählen</option>
+          <option value="" disabled selected>Please choose</option>
           <option value="check-in">Check-in</option>
           <option value="check-out">Check-out</option>
         </select>
       </label>
-      <button type="submit" class="button">Senden</button>
+      <button type="submit" class="button">Submit</button>
     </form>
-    <a class="link" href="{{ url_for('logout') }}">Abmelden</a>
+    <a class="link" href="{{ url_for('logout') }}">Sign out</a>
   </section>
 {% endblock %}

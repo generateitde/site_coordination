@@ -2,14 +2,14 @@
 
 {% block content %}
   <section class="card">
-    <h2>Koordination</h2>
-    <p>Bitte wähle einen Bereich aus.</p>
-    <div class="actions">
-      <a class="button" href="{{ url_for('registrations') }}">Registrierungen</a>
-      <a class="button" href="{{ url_for('bookings') }}">Buchungen</a>
-      <a class="button" href="{{ url_for('activities') }}">Aktivitäten</a>
-      <a class="button" href="{{ url_for('analysis') }}">Analyse</a>
-      <a class="button" href="{{ url_for('users_manage') }}">User-Verwaltung</a>
+    <h2>Coordination</h2>
+    <p>Please choose a section.</p>
+    <div class="actions-grid">
+      <a class="button" href="{{ url_for('registrations') }}">Registrations</a>
+      <a class="button" href="{{ url_for('bookings') }}">Bookings</a>
+      <a class="button" href="{{ url_for('activities') }}">Activities</a>
+      <a class="button" href="{{ url_for('analysis') }}">Analytics</a>
+      <a class="button" href="{{ url_for('users_manage') }}">User Management</a>
     </div>
   </section>
 {% endblock %}

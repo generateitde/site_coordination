@@ -2,12 +2,12 @@
 
 {% block content %}
   <section class="card">
-    <h2>Buchungen</h2>
-    <p>Buchungen können manuell erfasst oder verwaltet werden.</p>
-    <div class="actions">
-      <a class="button" href="{{ url_for('booking_manual') }}">Manuell erfassen</a>
-      <a class="button" href="{{ url_for('bookings_manage') }}">Verwalten</a>
-      <a class="link" href="{{ url_for('index') }}">Zurück</a>
+    <h2>Bookings</h2>
+    <p>Bookings can be entered manually or managed.</p>
+    <div class="actions-grid">
+      <a class="button" href="{{ url_for('booking_manual') }}">Enter manually</a>
+      <a class="button" href="{{ url_for('bookings_manage') }}">Manage</a>
     </div>
+    <a class="link" href="{{ url_for('index') }}">Back</a>
   </section>
 {% endblock %}
