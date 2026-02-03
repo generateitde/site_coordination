@@ -14,31 +14,5 @@
       </label>
       <button type="submit" class="button">Senden</button>
     </form>
-    <h2>Coordination Dashboard</h2>
-    <p class="meta">
-      Use the sections below to manage registrations, bookings, activities, and analytics.
-    </p>
-  </section>
-  <section class="grid">
-    <a class="card link-card" href="{{ url_for('registrations') }}">
-      <h3>Manage Registrations</h3>
-      <p>Manual intake and approval workflows for registration emails.</p>
-    </a>
-    <a class="card link-card" href="{{ url_for('bookings') }}">
-      <h3>Manage Bookings</h3>
-      <p>Manual intake and approval workflows for booking requests.</p>
-    </a>
-    <a class="card link-card" href="{{ url_for('activities') }}">
-      <h3>Manage Activities</h3>
-      <p>Review research and service provider activity logs.</p>
-    </a>
-    <a class="card link-card" href="{{ url_for('analysis') }}">
-      <h3>Analytics</h3>
-      <p>Conflict detection, weekly booking breakdowns, and activity stats.</p>
-    </a>
-    <a class="card link-card" href="{{ url_for('users_manage') }}">
-      <h3>Manage Users</h3>
-      <p>Review user accounts and send credentials when needed.</p>
-    </a>
   </section>
 {% endblock %}

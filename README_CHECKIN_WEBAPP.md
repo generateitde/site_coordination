@@ -1,37 +1,39 @@
 # CheckIn Webapp
 
-## Voraussetzungen
+## Prerequisites
 
 - Python 3.11+
-- Abhängigkeiten installiert: `pip install -r requirements.txt`
-- SQLite-Datenbank vorhanden (Standard: `site_coordination.sqlite`)
+- Dependencies installed: `pip install -r requirements.txt`
+- SQLite database available (default: `site_coordination.sqlite`)
 
-## Starten der Webapp
+## Start the webapp
 
-1. (Optional) Datenbank initialisieren:
+1. (Optional) Initialize the database:
    ```bash
    python -m site_coordination.cli init-db
    ```
-2. (Optional) `SITE_COORDINATION_DB` setzen, falls die Datenbank nicht im Projekt-Root liegt:
+2. (Optional) Set `SITE_COORDINATION_DB` if the database is not in the project root:
    ```bash
-   export SITE_COORDINATION_DB=/pfad/zur/site_coordination.sqlite
+   export SITE_COORDINATION_DB=/path/to/site_coordination.sqlite
    ```
-3. Webapp starten:
+3. Start the webapp:
    ```bash
    python -m site_coordination.webapp
    ```
-4. Im Browser öffnen:
+4. Open in the browser:
    ```
    http://localhost:5000
    ```
 
-## Ablauf in der Webapp
+## Flow inside the webapp
 
-1. **Seite 1 (Auswahl):** Researcher oder Service Provider auswählen und **Senden**.
-2. **Seite 2 (Login, nur Researcher):** E-Mail + Passwort eingeben. **Login** prüft die Daten gegen die `users`-Tabelle in `site_coordination.sqlite`.
-3. **Seite 3 (Check-in/Check-out):** Auswahl im Dropdown und **Senden** speichert den Eintrag in `activity_research`.
+1. **Page 1 (Selection):** Choose Researcher or Service Provider and click **Send**.
+2. **Page 2 (Login, Researcher only):** Enter email + password. **Login** validates against the `users`
+   table in `site_coordination.sqlite`.
+3. **Page 3 (Check-in/Check-out):** Choose the dropdown value and click **Send** to store the entry in
+   `activity_research`.
 
-## Hinweise
+## Notes
 
-- Fehlgeschlagene Logins zeigen eine Fehlermeldung an.
-- Für den Produktivbetrieb sollte `SITE_COORDINATION_SECRET` gesetzt werden.
+- Failed logins show an error message.
+- For production, set `SITE_COORDINATION_SECRET`.
