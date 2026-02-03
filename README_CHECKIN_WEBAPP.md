@@ -47,3 +47,6 @@
 - **BuildError: Could not build url for endpoint 'registrations'**: Ensure you have pulled the
   latest changes so the `/registrations` route exists, or remove any older template link that
   references `url_for('registrations')`.
+- **BuildError: Could not build url for endpoint 'bookings'**: Ensure you have pulled the latest
+  changes so the `/bookings` route exists, or remove any older template link that references
+  `url_for('bookings')`.

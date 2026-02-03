@@ -37,6 +37,10 @@ def create_app() -> Flask:
     def registrations() -> str:
         return render_template("registrations.html")
 
+    @app.get("/bookings")
+    def bookings() -> str:
+        return render_template("bookings.html")
+
     @app.route("/login", methods=["GET", "POST"])
     def login() -> str:
         if request.method == "POST":

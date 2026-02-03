@@ -3,19 +3,7 @@
 {% block content %}
   <section class="card">
     <h2>Bookings</h2>
-    <p class="meta">
-      Choose how you want to handle booking requests when email automation is unavailable.
-    </p>
+    <p>Dieser Bereich ist derzeit nicht verfügbar.</p>
+    <a class="link" href="{{ url_for('index') }}">Zurück zur Auswahl</a>
   </section>
-  <section class="grid">
-    <a class="card link-card" href="{{ url_for('booking_manual') }}">
-      <h3>Enter Booking Manually</h3>
-      <p>Paste the raw email content from the booking form.</p>
-    </a>
-    <a class="card link-card" href="{{ url_for('bookings_manage') }}">
-      <h3>Manage Bookings</h3>
-      <p>Review the bookings database, approve, or deny requests.</p>
-    </a>
-  </section>
-  <a class="link" href="{{ url_for('index') }}">Back to dashboard</a>
 {% endblock %}
