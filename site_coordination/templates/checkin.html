@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Check-in / Check-out</h2>
+    <p class="meta">Angemeldet als: {{ email }}{% if project %} · Projekt: {{ project }}{% endif %}</p>
+    <form method="post" class="form">
+      <label class="field">
+        <span>Präsenz vor Ort*</span>
+        <select name="presence" required>
+          <option value="" disabled selected>Bitte wählen</option>
+          <option value="check-in">Check-in</option>
+          <option value="check-out">Check-out</option>
+        </select>
+      </label>
+      <button type="submit" class="button">Senden</button>
+    </form>
+    <a class="link" href="{{ url_for('logout') }}">Abmelden</a>
+  </section>
+{% endblock %}
