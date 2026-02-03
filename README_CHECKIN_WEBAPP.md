@@ -4,7 +4,7 @@
 
 - Python 3.11+
 - Dependencies installed: `pip install -r requirements.txt`
-- SQLite database available (default: `site_coordination.sqlite`)
+- SQLite database available (default: `database/site_coordination.sqlite`)
 
 ## Start the webapp
 
@@ -12,7 +12,7 @@
    ```bash
    python -m site_coordination.cli init-db
    ```
-2. (Optional) Set `SITE_COORDINATION_DB` if the database is not in the project root:
+2. (Optional) Set `SITE_COORDINATION_DB` if the database is not in `database/`:
    ```bash
    export SITE_COORDINATION_DB=/path/to/site_coordination.sqlite
    ```
