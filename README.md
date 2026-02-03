@@ -120,6 +120,50 @@ python -m site_coordination.cli approve user@example.com
 python -m site_coordination.cli reject user@example.com
 ```
 
+## Web App Usage
+
+Note: This web app is **not** the check-in/check-out experience. It is a coordination dashboard
+used to manage registration, booking, activity, and analytics data when automated email ingestion
+is insufficient or needs manual oversight.
+
+1. Install dependencies:
+
+```
+pip install -r requirements.txt
+```
+
+2. (Optional) Configure environment variables for the SQLite path and SMTP:
+
+```
+export SITE_COORDINATION_DB=site_coordination.sqlite
+export SITE_COORDINATION_SMTP_HOST=smtp.example.com
+export SITE_COORDINATION_SMTP_USER=wordpress@example.com
+export SITE_COORDINATION_SMTP_PASSWORD=secret
+```
+
+3. Start the Flask web app:
+
+```
+python -m site_coordination.webapp
+```
+
+4. Open the dashboard in your browser:
+
+```
+http://localhost:5000
+```
+
+From the dashboard you can:
+
+- **Manage registrations** (manual intake + approve/deny requests). Approving creates users without
+  sending credentials automatically.
+- **Manage users** (filter by columns and send credentials on demand; the `credentials_sent` counter
+  increases each time you send credentials).
+- **Manage bookings** (manual intake + approve/deny requests and send booking confirmations).
+- **Manage activities** (view research or service provider activity logs and filter by content).
+- **Analytics** (review booking conflicts, weekly counts, project distribution, and activity
+  summaries with optional date ranges).
+
 ## Environment Variables
 
 - `SITE_COORDINATION_DB`: SQLite path (default: `site_coordination.sqlite`).
