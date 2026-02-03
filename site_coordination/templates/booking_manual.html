@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Manual Booking Entry</h2>
+    <p class="meta">
+      Paste the full email content between the BEGIN/END markers. The record will be stored
+      in the <strong>bookings</strong> table with status <em>zu_ueberpruefen</em>.
+    </p>
+    <form method="post" class="form">
+      <label class="field">
+        Raw booking email
+        <textarea name="raw_email" rows="14" placeholder="BEGIN_BOOKING_REQUEST_V1&#10;first_name=..."></textarea>
+      </label>
+      <button type="submit" class="button">Store booking</button>
+    </form>
+  </section>
+  <section class="card code-card">
+    <h3>Example payload</h3>
+    <pre>BEGIN_BOOKING_REQUEST_V1
+first_name=Davide
+last_name=Picchi
+email=picchi@ip.rwth-aachen.de
+project=Alle
+timeslot_raw=2026-W41;2026-10-05;2026-10-11
+duration_weeks=2
+indoor=yes
+outdoor=yes
+outdoor_type=with_machines
+equipment=yes
+END_BOOKING_REQUEST_V1</pre>
+  </section>
+  <a class="link" href="{{ url_for('bookings') }}">Back to bookings</a>
+{% endblock %}
