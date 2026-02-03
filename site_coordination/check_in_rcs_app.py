@@ -3,19 +3,21 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
-import sqlite3
 from typing import Optional, Tuple
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 
-from site_coordination.config import load_database_config
+from site_coordination.db_tools import get_connection
 
 
 def create_app() -> Flask:
     """Create the Flask application."""
 
-    app = Flask(__name__)
+    app = Flask(
+        __name__,
+        template_folder="templates_checkin",
+        static_folder="static",
+    )
     app.secret_key = os.environ.get("SITE_COORDINATION_SECRET", "dev-secret")
 
     @app.get("/")
@@ -78,18 +80,10 @@ def create_app() -> Flask:
     return app
 
 
-def _get_connection() -> sqlite3.Connection:
-    config = load_database_config()
-    db_path = Path(config.path)
-    connection = sqlite3.connect(db_path)
-    connection.row_factory = sqlite3.Row
-    return connection
-
-
 def _fetch_user(email: str) -> Optional[Tuple[str, str]]:
     if not email:
         return None
-    with _get_connection() as connection:
+    with get_connection() as connection:
         row = connection.execute(
             "SELECT password, project FROM users WHERE email = ?",
             (email,),
@@ -100,7 +94,7 @@ def _fetch_user(email: str) -> Optional[Tuple[str, str]]:
 
 
 def _insert_activity(email: str, project: str, presence: str) -> None:
-    with _get_connection() as connection:
+    with get_connection() as connection:
         connection.execute(
             "INSERT INTO activity_research (email, project, presence) VALUES (?, ?, ?)",
             (email, project, presence),
