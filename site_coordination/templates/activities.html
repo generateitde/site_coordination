@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Manage Activities</h2>
+    <p class="meta">
+      Select the activity table to inspect and filter by column content.
+    </p>
+    <form method="get" class="form form-inline">
+      <label class="field">
+        Activity table
+        <select name="table">
+          <option value="research" {% if table == "research" %}selected{% endif %}>
+            activity_research
+          </option>
+          <option value="service" {% if table == "service" %}selected{% endif %}>
+            activity_service_provider
+          </option>
+        </select>
+      </label>
+      <label class="field">
+        Filter
+        <input type="text" name="q" value="{{ query }}" placeholder="Search activity" />
+      </label>
+      <button type="submit" class="button button-secondary">Apply filter</button>
+    </form>
+  </section>
+  <section class="card table-card">
+    <table>
+      <thead>
+        {% if table == "research" %}
+          <tr>
+            <th>Email</th>
+            <th>Project</th>
+            <th>Presence</th>
+            <th>Created</th>
+          </tr>
+        {% else %}
+          <tr>
+            <th>Name</th>
+            <th>Company</th>
+            <th>Service</th>
+            <th>Presence</th>
+            <th>Created</th>
+          </tr>
+        {% endif %}
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          {% if table == "research" %}
+            <tr>
+              <td>{{ row.email }}</td>
+              <td>{{ row.project }}</td>
+              <td>{{ row.presence }}</td>
+              <td>{{ row.created_at }}</td>
+            </tr>
+          {% else %}
+            <tr>
+              <td>{{ row.name }}</td>
+              <td>{{ row.company }}</td>
+              <td>{{ row.service }}</td>
+              <td>{{ row.presence }}</td>
+              <td>{{ row.created_at }}</td>
+            </tr>
+          {% endif %}
+        {% else %}
+          <tr>
+            <td colspan="5" class="meta">No activity found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  <a class="link" href="{{ url_for('index') }}">Back to dashboard</a>
+{% endblock %}
