@@ -41,3 +41,9 @@
 
 - Failed logins show an error message.
 - For production, set `SITE_COORDINATION_SECRET`.
+
+## Troubleshooting
+
+- **BuildError: Could not build url for endpoint 'registrations'**: Ensure you have pulled the
+  latest changes so the `/registrations` route exists, or remove any older template link that
+  references `url_for('registrations')`.
