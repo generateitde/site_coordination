@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Manual Registration Entry</h2>
+    <p class="meta">
+      Paste the full email content between the BEGIN/END markers. The record will be stored
+      in the <strong>registrations</strong> table with status <em>offen</em>.
+    </p>
+    <form method="post" class="form">
+      <label class="field">
+        Raw registration email
+        <textarea name="raw_email" rows="14" placeholder="BEGIN_ACCESS_REQUEST_V1&#10;first_name=..."></textarea>
+      </label>
+      <button type="submit" class="button">Store registration</button>
+    </form>
+  </section>
+  <section class="card code-card">
+    <h3>Example payload</h3>
+    <pre>BEGIN_ACCESS_REQUEST_V1
+first_name=Davide
+last_name=Picchi
+email=picchi@ip.rwth-aachen.de
+affiliation=RWTH
+project=Alle
+phone=923857892452890
+activity_begin
+activity_end
+END_ACCESS_REQUEST_V1</pre>
+  </section>
+  <a class="link" href="{{ url_for('registrations') }}">Back to registrations</a>
+{% endblock %}
