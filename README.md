@@ -141,10 +141,16 @@ export SITE_COORDINATION_SMTP_USER=wordpress@example.com
 export SITE_COORDINATION_SMTP_PASSWORD=secret
 ```
 
-3. Start the coordination web app:
+3. Start the coordination web app from the repository root:
 
 ```
 python -m site_coordination.coordination_app
+```
+
+   Alternatively, you can run the shim module directly:
+
+```
+python -m coordination_app
 ```
 
 4. Open the dashboard in your browser:
