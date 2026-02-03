@@ -79,6 +79,10 @@ def create_app() -> Flask:
 
     @app.route("/users/manage", methods=["GET", "POST"])
     def users_manage() -> str:
+        selected_email = request.args.get("show_email", "").strip().lower()
+        credentials_preview = None
+        if selected_email:
+            credentials_preview = _build_credentials_preview(selected_email)
         if request.method == "POST":
             email = request.form.get("email", "")
             action = request.form.get("action", "")
@@ -90,6 +94,7 @@ def create_app() -> Flask:
             "users_manage.html",
             users=users,
             query=query,
+            credentials_preview=credentials_preview,
         )
 
     @app.get("/bookings")
@@ -360,6 +365,21 @@ def _send_user_credentials(email: str) -> None:
             )
             connection.commit()
         flash(f"Credentials sent to {email}.", "success")
+
+
+def _build_credentials_preview(email: str) -> Optional[dict]:
+    with _get_connection() as connection:
+        row = connection.execute(
+            "SELECT email, password FROM users WHERE email = ?",
+            (email,),
+        ).fetchone()
+    if row is None:
+        flash("User not found for credentials preview.", "error")
+        return None
+    message = build_credentials_email(row["email"], row["password"])
+    subject = message["Subject"] or ""
+    body = message.get_content()
+    return {"email": row["email"], "subject": subject, "body": body}
 
 
 def _send_booking_email(email: str, row: sqlite3.Row) -> None:
