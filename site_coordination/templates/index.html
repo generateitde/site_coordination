@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Auswahl</h2>
+    <form method="post" action="{{ url_for('select_role') }}" class="form">
+      <label class="radio">
+        <input type="radio" name="role" value="researcher" checked />
+        Researcher
+      </label>
+      <label class="radio">
+        <input type="radio" name="role" value="service-provider" />
+        Service Provider
+      </label>
+      <button type="submit" class="button">Senden</button>
+    </form>
+  </section>
+{% endblock %}
