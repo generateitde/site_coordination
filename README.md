@@ -122,6 +122,10 @@ python -m site_coordination.cli reject user@example.com
 
 ## Web App Usage
 
+Note: This web app is **not** the check-in/check-out experience. It is a coordination dashboard
+used to manage registration, booking, activity, and analytics data when automated email ingestion
+is insufficient or needs manual oversight.
+
 1. Install dependencies:
 
 ```
@@ -137,10 +141,10 @@ export SITE_COORDINATION_SMTP_USER=wordpress@example.com
 export SITE_COORDINATION_SMTP_PASSWORD=secret
 ```
 
-3. Start the Flask web app:
+3. Start the coordination web app:
 
 ```
-python -m site_coordination.webapp
+python -m site_coordination.coordination_app
 ```
 
 4. Open the dashboard in your browser:
