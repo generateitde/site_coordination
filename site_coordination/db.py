@@ -72,6 +72,7 @@ def init_db(connection: sqlite3.Connection) -> None:
             affiliation TEXT NOT NULL,
             project TEXT NOT NULL,
             phone TEXT NOT NULL,
+            credentials_sent INTEGER NOT NULL DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         """
@@ -122,6 +123,20 @@ def init_db(connection: sqlite3.Connection) -> None:
         """
     )
     connection.commit()
+
+
+def ensure_users_credentials_column(connection: sqlite3.Connection) -> None:
+    """Ensure users table has the credentials_sent column."""
+
+    columns = {
+        row["name"]
+        for row in connection.execute("PRAGMA table_info(users)").fetchall()
+    }
+    if "credentials_sent" not in columns:
+        connection.execute(
+            "ALTER TABLE users ADD COLUMN credentials_sent INTEGER NOT NULL DEFAULT 0"
+        )
+        connection.commit()
 
 
 def insert_registration(connection: sqlite3.Connection, record: RegistrationRecord) -> None:
