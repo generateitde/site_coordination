@@ -74,7 +74,9 @@ def load_database_config() -> DatabaseConfig:
 def load_database_config() -> DatabaseConfig:
     """Load database configuration from environment variables."""
 
-    db_path = Path(os.environ.get("SITE_COORDINATION_DB", "site_coordination.sqlite"))
+    db_path = Path(
+        os.environ.get("SITE_COORDINATION_DB", "database/site_coordination.sqlite")
+    )
     return DatabaseConfig(path=db_path)
 
 
