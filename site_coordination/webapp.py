@@ -1,3 +1,4 @@
+"""Simple web UI for site coordination check-in/out."""
 """Web UI for site coordination workflows."""
 
 from __future__ import annotations
@@ -5,6 +6,11 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import sqlite3
+from typing import Optional, Tuple
+
+from flask import Flask, flash, redirect, render_template, request, session, url_for
+
+from site_coordination.config import load_database_config
 from typing import Iterable, Optional
 
 from flask import Flask, flash, redirect, render_template, request, url_for
@@ -36,6 +42,50 @@ def create_app() -> Flask:
     def index() -> str:
         return render_template("index.html")
 
+    @app.post("/select")
+    def select_role():
+        role = request.form.get("role")
+        if role == "researcher":
+            return redirect(url_for("login"))
+        return redirect(url_for("service_provider"))
+
+    @app.get("/service-provider")
+    def service_provider() -> str:
+        return render_template("service_provider.html")
+
+    @app.route("/login", methods=["GET", "POST"])
+    def login() -> str:
+        if request.method == "POST":
+            email = request.form.get("email", "").strip().lower()
+            password = request.form.get("password", "").strip()
+            user = _fetch_user(email)
+            if user is None or password != user[0]:
+                flash("Falsche Login-Daten. Bitte erneut versuchen.", "error")
+            else:
+                session["user_email"] = email
+                session["user_project"] = user[1]
+                return redirect(url_for("checkin"))
+        return render_template("login.html")
+
+    @app.route("/checkin", methods=["GET", "POST"])
+    def checkin() -> str:
+        if "user_email" not in session:
+            return redirect(url_for("login"))
+        email = session["user_email"]
+        project = session.get("user_project", "")
+        if request.method == "POST":
+            presence = request.form.get("presence")
+            if presence in {"check-in", "check-out"}:
+                _insert_activity(email, project, presence)
+                flash("Eintrag gespeichert.", "success")
+            else:
+                flash("Bitte eine gültige Auswahl treffen.", "error")
+        return render_template("checkin.html", email=email, project=project)
+
+    @app.get("/logout")
+    def logout() -> str:
+        session.clear()
+        return redirect(url_for("index"))
     @app.get("/registrations")
     def registrations() -> str:
         return render_template("registrations.html")
@@ -181,6 +231,26 @@ def _get_connection() -> sqlite3.Connection:
     return connection
 
 
+def _fetch_user(email: str) -> Optional[Tuple[str, str]]:
+    if not email:
+        return None
+    with _get_connection() as connection:
+        row = connection.execute(
+            "SELECT password, project FROM users WHERE email = ?",
+            (email,),
+        ).fetchone()
+    if row is None:
+        return None
+    return row["password"], row["project"]
+
+
+def _insert_activity(email: str, project: str, presence: str) -> None:
+    with _get_connection() as connection:
+        connection.execute(
+            "INSERT INTO activity_research (email, project, presence) VALUES (?, ?, ?)",
+            (email, project, presence),
+        )
+        connection.commit()
 def _ensure_database() -> None:
     with _get_connection() as connection:
         db.init_db(connection)
