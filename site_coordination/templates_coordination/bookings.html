@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Buchungen</h2>
+    <p>Buchungen können manuell erfasst oder verwaltet werden.</p>
+    <div class="actions">
+      <a class="button" href="{{ url_for('booking_manual') }}">Manuell erfassen</a>
+      <a class="button" href="{{ url_for('bookings_manage') }}">Verwalten</a>
+      <a class="link" href="{{ url_for('index') }}">Zurück</a>
+    </div>
+  </section>
+{% endblock %}

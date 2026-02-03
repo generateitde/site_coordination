@@ -28,10 +28,11 @@ from site_coordination.processor import handle_access_request, handle_booking_re
 def create_app() -> Flask:
     """Create the Flask application."""
 
+    base_dir = Path(__file__).resolve().parent
     app = Flask(
         __name__,
-        template_folder="templates_coordination",
-        static_folder="static",
+        template_folder=str(base_dir / "templates_coordination"),
+        static_folder=str(base_dir / "static"),
     )
     app.secret_key = os.environ.get("SITE_COORDINATION_SECRET", "dev-secret")
     _ensure_database()

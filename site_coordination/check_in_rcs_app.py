@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Optional, Tuple
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for
@@ -13,10 +14,11 @@ from site_coordination.db_tools import get_connection
 def create_app() -> Flask:
     """Create the Flask application."""
 
+    base_dir = Path(__file__).resolve().parent
     app = Flask(
         __name__,
-        template_folder="templates_checkin",
-        static_folder="static",
+        template_folder=str(base_dir / "templates_checkin"),
+        static_folder=str(base_dir / "static"),
     )
     app.secret_key = os.environ.get("SITE_COORDINATION_SECRET", "dev-secret")
 
