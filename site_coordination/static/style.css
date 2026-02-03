@@ -31,16 +31,41 @@ body {
   background: #ffffff;
   border-radius: 16px;
   padding: 24px;
-  width: min(420px, 92vw);
+  width: min(560px, 92vw);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
+.grid {
+  display: grid;
+  gap: 20px;
+  width: min(1040px, 92vw);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.link-card {
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.link-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+}
+
 .form {
   display: flex;
   flex-direction: column;
+  gap: 16px;
+}
+
+.form-inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
   gap: 16px;
 }
 
@@ -52,11 +77,24 @@ body {
 }
 
 .field input,
-.field select {
+.field select,
+.field textarea {
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid #cbd2da;
   font-size: 16px;
+}
+
+.field textarea {
+  min-height: 200px;
+  resize: vertical;
+  font-family: "Courier New", monospace;
+}
+
+.inline-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .radio {
@@ -81,6 +119,17 @@ body {
   padding: 10px 18px;
   font-size: 16px;
   cursor: pointer;
+}
+
+.button-secondary {
+  background: #f2f4f7;
+  color: #1d1f24;
+  border: 1px solid #cbd2da;
+}
+
+.button-small {
+  padding: 6px 12px;
+  font-size: 14px;
 }
 
 .link {
@@ -116,4 +165,60 @@ body {
   margin: 0;
   font-size: 14px;
   color: #5d6470;
+}
+
+.table-card {
+  width: min(1040px, 92vw);
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th,
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #5d6470;
+}
+
+.inline-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f2f4f7;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.code-card pre {
+  margin: 0;
+  white-space: pre-wrap;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
 }

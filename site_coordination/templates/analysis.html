@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Analytics</h2>
+    <p class="meta">
+      Select an email and optional time range to analyze bookings and activities.
+    </p>
+    <form method="post" class="form">
+      <label class="field">
+        Email (optional)
+        <select name="email">
+          <option value="">All users</option>
+          {% for email in selections %}
+            <option value="{{ email }}" {% if filters.email == email %}selected{% endif %}>
+              {{ email }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <div class="inline-fields">
+        <label class="field">
+          Start date
+          <input type="date" name="start_date" value="{{ filters.start_date or '' }}" />
+        </label>
+        <label class="field">
+          End date
+          <input type="date" name="end_date" value="{{ filters.end_date or '' }}" />
+        </label>
+      </div>
+      <button type="submit" class="button">Run analysis</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h3>Booking summary</h3>
+    <p class="meta">Total bookings: {{ booking_summary.total }}</p>
+    <div class="stats-grid">
+      <div>
+        <h4>Weekly booking totals</h4>
+        <ul>
+          {% for week, count in booking_summary.week_counts.items() %}
+            <li>{{ week }}: {{ count }}</li>
+          {% else %}
+            <li class="meta">No bookings available.</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h4>Potential conflicts</h4>
+        <ul>
+          {% for week, count in booking_summary.conflicts.items() %}
+            <li>{{ week }}: {{ count }} overlapping bookings</li>
+          {% else %}
+            <li class="meta">No conflicts detected.</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h4>Projects by week</h4>
+        <ul>
+          {% for week, projects in booking_summary.week_projects.items() %}
+            <li>
+              {{ week }}:
+              {% for project, count in projects.items() %}
+                {{ project }} ({{ count }}){% if not loop.last %},{% endif %}
+              {% endfor %}
+            </li>
+          {% else %}
+            <li class="meta">No project data available.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h3>User activity summary</h3>
+    <p class="meta">Total activity entries: {{ user_activity.total }}</p>
+    <ul>
+      {% for email, count in user_activity.per_user.items() %}
+        <li>{{ email }}: {{ count }} activities</li>
+      {% else %}
+        <li class="meta">No activity entries available.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="card">
+    <h3>Service provider analysis</h3>
+    <p class="meta">
+      Run a separate analysis for service providers using an optional time range.
+    </p>
+    <form method="post" class="form form-inline">
+      <div class="inline-fields">
+        <label class="field">
+          Start date
+          <input
+            type="date"
+            name="service_start_date"
+            value="{{ filters.service_start_date or '' }}"
+          />
+        </label>
+        <label class="field">
+          End date
+          <input type="date" name="service_end_date" value="{{ filters.service_end_date or '' }}" />
+        </label>
+      </div>
+      <button type="submit" class="button button-secondary">Run service analysis</button>
+    </form>
+    <p class="meta">Total service provider entries: {{ service_activity.total }}</p>
+    <ul>
+      {% for service, count in service_activity.per_service.items() %}
+        <li>{{ service }}: {{ count }} activities</li>
+      {% else %}
+        <li class="meta">No service activity entries available.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <a class="link" href="{{ url_for('index') }}">Back to dashboard</a>
+{% endblock %}
