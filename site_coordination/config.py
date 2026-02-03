@@ -71,7 +71,11 @@ def load_database_config() -> DatabaseConfig:
     """Load database configuration from environment variables."""
 
     load_env()
-    base_dir = Path.cwd()
+    base_dir = Path(
+        os.environ.get(
+            "SITE_COORDINATION_BASE_DIR", Path(__file__).resolve().parent.parent
+        )
+    )
     db_value = os.environ.get("SITE_COORDINATION_DB", "site_coordination.sqlite")
     db_path = Path(db_value)
     if not db_path.is_absolute():

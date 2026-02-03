@@ -41,16 +41,16 @@ def approve_registration(
         project=row["project"],
         phone=row["phone"],
     )
-    db.update_registration_status(connection, email, "erfolgreich")
+    db.update_registration_status(connection, email, "approved")
 
     message = build_credentials_email(email, password)
     send_email(smtp_config, message)
 
-    return ApprovalResult(email=email, status="erfolgreich")
+    return ApprovalResult(email=email, status="approved")
 
 
 def reject_registration(connection: sqlite3.Connection, email: str) -> ApprovalResult:
     """Reject a registration."""
 
-    db.update_registration_status(connection, email, "abgelehnt")
-    return ApprovalResult(email=email, status="abgelehnt")
+    db.update_registration_status(connection, email, "rejected")
+    return ApprovalResult(email=email, status="rejected")

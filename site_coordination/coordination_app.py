@@ -294,7 +294,7 @@ def _approve_registration(email: str) -> None:
             project=row["project"],
             phone=row["phone"],
         )
-        db.update_registration_status(connection, email, "registriert")
+        db.update_registration_status(connection, email, "registered")
     flash(f"Registration approved and user created for {email}.", "success")
 
 
@@ -315,7 +315,7 @@ def _approve_booking(booking_id: int) -> None:
             return
         connection.execute(
             "UPDATE bookings SET status = ? WHERE id = ?",
-            ("gebucht", booking_id),
+            ("booked", booking_id),
         )
         connection.commit()
     _send_booking_email(row["email"], row)

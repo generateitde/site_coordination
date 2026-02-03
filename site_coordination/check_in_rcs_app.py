@@ -9,6 +9,7 @@ from typing import Optional, Tuple
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 
+from site_coordination import db
 from site_coordination.config import load_database_config
 
 
@@ -72,10 +73,7 @@ def create_app() -> Flask:
 
 def _get_connection() -> sqlite3.Connection:
     config = load_database_config()
-    db_path = Path(config.path)
-    connection = sqlite3.connect(db_path)
-    connection.row_factory = sqlite3.Row
-    return connection
+    return db.connect(Path(config.path))
 
 
 def _fetch_user(email: str) -> Optional[Tuple[str, str]]:
