@@ -147,10 +147,10 @@ export SITE_COORDINATION_SMTP_PASSWORD=secret
 python -m site_coordination.coordination_app
 ```
 
-   Alternatively, you can run the shim module directly:
+   Alternatively, you can run the local script:
 
 ```
-python -m coordination_app
+python run_coordination_rcs_app.py
 ```
 
 4. Open the dashboard in your browser:
