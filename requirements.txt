@@ -8,3 +8,6 @@ seaborn>=0.13
 
 # Database access (SQLite is provided by Python's standard library via sqlite3)
 sqlalchemy>=2.0
+
+# Web app
+flask>=3.0
