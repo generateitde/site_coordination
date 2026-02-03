@@ -38,6 +38,7 @@ class BookingRecord:
 def connect(db_path: Path) -> sqlite3.Connection:
     """Connect to the SQLite database."""
 
+    db_path.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(db_path)
     connection.row_factory = sqlite3.Row
     return connection
