@@ -7,6 +7,7 @@ import sqlite3
 from typing import Iterable, Optional
 
 from flask import Flask, flash, redirect, render_template, request, url_for
+from jinja2 import ChoiceLoader, FileSystemLoader
 
 from site_coordination import db
 from site_coordination.config import load_smtp_config
@@ -28,10 +29,19 @@ from site_coordination.processor import handle_access_request, handle_booking_re
 def create_app() -> Flask:
     """Create the Flask application."""
 
+    base_dir = Path(__file__).resolve().parent
+    templates_dir = base_dir / "templates_coordination"
+    legacy_templates_dir = base_dir / "templates"
     app = Flask(
         __name__,
-        template_folder="templates_coordination",
-        static_folder="static",
+        template_folder=str(templates_dir),
+        static_folder=str(base_dir / "static"),
+    )
+    app.jinja_loader = ChoiceLoader(
+        [
+            FileSystemLoader(str(templates_dir)),
+            FileSystemLoader(str(legacy_templates_dir)),
+        ],
     )
     app.secret_key = os.environ.get("SITE_COORDINATION_SECRET", "dev-secret")
     _ensure_database()
