@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Koordination</h2>
+    <p>Bitte wähle einen Bereich aus.</p>
+    <div class="actions">
+      <a class="button" href="{{ url_for('registrations') }}">Registrierungen</a>
+      <a class="button" href="{{ url_for('bookings') }}">Buchungen</a>
+      <a class="button" href="{{ url_for('activities') }}">Aktivitäten</a>
+      <a class="button" href="{{ url_for('analysis') }}">Analyse</a>
+      <a class="button" href="{{ url_for('users_manage') }}">User-Verwaltung</a>
+    </div>
+  </section>
+{% endblock %}

@@ -10,7 +10,8 @@ from typing import Iterable, Optional
 from flask import Flask, flash, redirect, render_template, request, url_for
 
 from site_coordination import db
-from site_coordination.config import load_database_config, load_smtp_config
+from site_coordination.config import load_smtp_config
+from site_coordination.db_tools import get_connection
 from site_coordination.email_parser import (
     EmailParseError,
     parse_access_request,
@@ -28,7 +29,12 @@ from site_coordination.processor import handle_access_request, handle_booking_re
 def create_app() -> Flask:
     """Create the Flask application."""
 
-    app = Flask(__name__)
+    base_dir = Path(__file__).resolve().parent
+    app = Flask(
+        __name__,
+        template_folder=str(base_dir / "templates_coordination"),
+        static_folder=str(base_dir / "static"),
+    )
     app.secret_key = os.environ.get("SITE_COORDINATION_SECRET", "dev-secret")
     _ensure_database()
 
@@ -52,7 +58,7 @@ def create_app() -> Flask:
                         "error",
                     )
                     return redirect(url_for("registration_manual"))
-                with _get_connection() as connection:
+                with get_connection() as connection:
                     result = handle_access_request(connection, parsed)
                 flash(result.message, "success")
                 return redirect(url_for("registration_manual"))
@@ -107,7 +113,7 @@ def create_app() -> Flask:
             raw_email = request.form.get("raw_email", "")
             try:
                 parsed = parse_booking_request(raw_email)
-                with _get_connection() as connection:
+                with get_connection() as connection:
                     result = handle_booking_request(connection, parsed)
                 flash(result.message, "success")
                 return redirect(url_for("booking_manual"))
@@ -184,17 +190,8 @@ def create_app() -> Flask:
     return app
 
 
-def _get_connection() -> sqlite3.Connection:
-    config = load_database_config()
-    db_path = Path(config.path)
-    db_path.parent.mkdir(parents=True, exist_ok=True)
-    connection = sqlite3.connect(db_path)
-    connection.row_factory = sqlite3.Row
-    return connection
-
-
 def _ensure_database() -> None:
-    with _get_connection() as connection:
+    with get_connection() as connection:
         db.init_db(connection)
         db.ensure_users_credentials_column(connection)
 
@@ -210,14 +207,14 @@ def _fetch_registrations(query: str) -> list[sqlite3.Row]:
         like_query = f"%{query}%"
         params = [like_query] * 6
     sql += " ORDER BY created_at DESC"
-    with _get_connection() as connection:
+    with get_connection() as connection:
         return connection.execute(sql, params).fetchall()
 
 
 def _user_exists(email: str) -> bool:
     if not email:
         return False
-    with _get_connection() as connection:
+    with get_connection() as connection:
         row = connection.execute(
             "SELECT 1 FROM users WHERE email = ?",
             (email,),
@@ -236,7 +233,7 @@ def _fetch_bookings(query: str) -> list[sqlite3.Row]:
         like_query = f"%{query}%"
         params = [like_query] * 6
     sql += " ORDER BY created_at DESC"
-    with _get_connection() as connection:
+    with get_connection() as connection:
         return connection.execute(sql, params).fetchall()
 
 
@@ -251,7 +248,7 @@ def _fetch_users(query: str) -> list[sqlite3.Row]:
         like_query = f"%{query}%"
         params = [like_query] * 6
     sql += " ORDER BY created_at DESC"
-    with _get_connection() as connection:
+    with get_connection() as connection:
         return connection.execute(sql, params).fetchall()
 
 
@@ -263,7 +260,7 @@ def _fetch_activity_research(query: str) -> list[sqlite3.Row]:
         like_query = f"%{query}%"
         params = [like_query] * 3
     sql += " ORDER BY created_at DESC"
-    with _get_connection() as connection:
+    with get_connection() as connection:
         return connection.execute(sql, params).fetchall()
 
 
@@ -275,12 +272,12 @@ def _fetch_activity_service(query: str) -> list[sqlite3.Row]:
         like_query = f"%{query}%"
         params = [like_query] * 4
     sql += " ORDER BY created_at DESC"
-    with _get_connection() as connection:
+    with get_connection() as connection:
         return connection.execute(sql, params).fetchall()
 
 
 def _approve_registration(email: str) -> None:
-    with _get_connection() as connection:
+    with get_connection() as connection:
         row = connection.execute(
             "SELECT * FROM registrations WHERE email = ?",
             (email,),
@@ -304,13 +301,13 @@ def _approve_registration(email: str) -> None:
 
 
 def _deny_registration(email: str) -> None:
-    with _get_connection() as connection:
+    with get_connection() as connection:
         db.update_registration_status(connection, email, "denied")
     flash(f"Registration denied for {email}.", "success")
 
 
 def _approve_booking(booking_id: int) -> None:
-    with _get_connection() as connection:
+    with get_connection() as connection:
         row = connection.execute(
             "SELECT * FROM bookings WHERE id = ?",
             (booking_id,),
@@ -328,7 +325,7 @@ def _approve_booking(booking_id: int) -> None:
 
 
 def _deny_booking(booking_id: int) -> None:
-    with _get_connection() as connection:
+    with get_connection() as connection:
         connection.execute(
             "UPDATE bookings SET status = ? WHERE id = ?",
             ("denied", booking_id),
@@ -348,7 +345,7 @@ def _send_credentials_email(email: str, password: str) -> bool:
 
 
 def _send_user_credentials(email: str) -> None:
-    with _get_connection() as connection:
+    with get_connection() as connection:
         row = connection.execute(
             "SELECT * FROM users WHERE email = ?",
             (email,),
@@ -358,7 +355,7 @@ def _send_user_credentials(email: str) -> None:
             return
         password = row["password"]
     if _send_credentials_email(email, password):
-        with _get_connection() as connection:
+        with get_connection() as connection:
             connection.execute(
                 "UPDATE users SET credentials_sent = credentials_sent + 1 WHERE email = ?",
                 (email,),
@@ -368,7 +365,7 @@ def _send_user_credentials(email: str) -> None:
 
 
 def _build_credentials_preview(email: str) -> Optional[dict]:
-    with _get_connection() as connection:
+    with get_connection() as connection:
         row = connection.execute(
             "SELECT email, password FROM users WHERE email = ?",
             (email,),
@@ -392,7 +389,7 @@ def _send_booking_email(email: str, row: sqlite3.Row) -> None:
 
 
 def _analysis_selections() -> Iterable[str]:
-    with _get_connection() as connection:
+    with get_connection() as connection:
         return db.fetch_user_emails(connection)
 
 
@@ -412,7 +409,7 @@ def _build_booking_summary(
     if end_date:
         base_sql += " AND date(created_at) <= date(?)"
         params.append(end_date)
-    with _get_connection() as connection:
+    with get_connection() as connection:
         rows = connection.execute(base_sql, params).fetchall()
 
     week_counts: dict[str, int] = {}
@@ -449,7 +446,7 @@ def _build_user_activity_summary(
     if end_date:
         base_sql += " AND date(created_at) <= date(?)"
         params.append(end_date)
-    with _get_connection() as connection:
+    with get_connection() as connection:
         rows = connection.execute(base_sql, params).fetchall()
     per_user: dict[str, int] = {}
     for row in rows:
@@ -469,7 +466,7 @@ def _build_service_activity_summary(
     if end_date:
         base_sql += " AND date(created_at) <= date(?)"
         params.append(end_date)
-    with _get_connection() as connection:
+    with get_connection() as connection:
         rows = connection.execute(base_sql, params).fetchall()
     per_service: dict[str, int] = {}
     for row in rows:
