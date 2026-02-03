@@ -18,7 +18,7 @@
    ```
 3. Start the webapp:
    ```bash
-   python -m site_coordination.webapp
+   python -m site_coordination.check_in_rcs_app
    ```
 4. Open in the browser:
    ```

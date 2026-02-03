@@ -180,3 +180,34 @@ From the dashboard you can:
 - Add a web UI for check-in/check-out (QR entry).
 - Add analytics scripts for booking conflict detection and per-user activity reports.
 - Extend the email templates and translation for German UI.
+
+## Check In / Check Out
+
+The repository includes a small Flask webapp for onsite check-in/check-out workflows.
+
+**Quickstart**
+
+1. (Optional) Initialize the database:
+   ```bash
+   python -m site_coordination.cli init-db
+   ```
+2. (Optional) Set `SITE_COORDINATION_DB` if the database is not in `database/`:
+   ```bash
+   export SITE_COORDINATION_DB=/path/to/site_coordination.sqlite
+   ```
+3. Start the webapp:
+   ```bash
+   python -m site_coordination.check_in_rcs_app
+   ```
+4. Open in the browser:
+   ```
+   http://localhost:5000
+   ```
+
+**Flow**
+
+1. Page 1: Select Researcher or Service Provider and click **Send**.
+2. Page 2 (Researcher only): Enter email + password. **Login** validates against the `users` table.
+3. Page 3: Select Check-in/Check-out and click **Send** to store the entry in `activity_research`.
+
+For more details, see `README_CHECKIN_WEBAPP.md`.
