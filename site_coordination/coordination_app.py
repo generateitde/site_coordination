@@ -46,6 +46,12 @@ def create_app() -> Flask:
             raw_email = request.form.get("raw_email", "")
             try:
                 parsed = parse_access_request(raw_email)
+                if _user_exists(parsed.email):
+                    flash(
+                        "A user with this email already exists. Registration not stored.",
+                        "error",
+                    )
+                    return redirect(url_for("registration_manual"))
                 with _get_connection() as connection:
                     result = handle_access_request(connection, parsed)
                 flash(result.message, "success")
@@ -201,6 +207,17 @@ def _fetch_registrations(query: str) -> list[sqlite3.Row]:
     sql += " ORDER BY created_at DESC"
     with _get_connection() as connection:
         return connection.execute(sql, params).fetchall()
+
+
+def _user_exists(email: str) -> bool:
+    if not email:
+        return False
+    with _get_connection() as connection:
+        row = connection.execute(
+            "SELECT 1 FROM users WHERE email = ?",
+            (email,),
+        ).fetchone()
+    return row is not None
 
 
 def _fetch_bookings(query: str) -> list[sqlite3.Row]:
