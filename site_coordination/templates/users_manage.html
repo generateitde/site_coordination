@@ -43,6 +43,12 @@
                 <button class="button button-small" name="action" value="send">
                   Send credentials
                 </button>
+                <a
+                  class="button button-small button-secondary"
+                  href="{{ url_for('users_manage', q=query, show_email=user.email) }}"
+                >
+                  Show email text
+                </a>
               </form>
             </td>
           </tr>
@@ -54,5 +60,27 @@
       </tbody>
     </table>
   </section>
+  {% if credentials_preview %}
+    <section class="card">
+      <h3>Credentials email preview</h3>
+      <p class="meta">
+        Use this content to manually email the user if needed.
+      </p>
+      <div class="form">
+        <label class="field">
+          Recipient
+          <input type="text" value="{{ credentials_preview.email }}" readonly />
+        </label>
+        <label class="field">
+          Subject
+          <input type="text" value="{{ credentials_preview.subject }}" readonly />
+        </label>
+        <label class="field">
+          Body
+          <textarea rows="10" readonly>{{ credentials_preview.body }}</textarea>
+        </label>
+      </div>
+    </section>
+  {% endif %}
   <a class="link" href="{{ url_for('index') }}">Back to dashboard</a>
 {% endblock %}

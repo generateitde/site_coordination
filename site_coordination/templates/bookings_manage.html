@@ -35,7 +35,7 @@
             <td>{{ booking.timeslot_raw }}</td>
             <td><span class="status">{{ booking.status }}</span></td>
             <td>
-              {% if booking.status == "pending_review" %}
+              {% if booking.status == "zu_ueberpruefen" %}
                 <form method="post" class="inline-actions">
                   <input type="hidden" name="booking_id" value="{{ booking.id }}" />
                   <button class="button button-small" name="action" value="approve">

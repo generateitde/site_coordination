@@ -36,7 +36,7 @@
             <td>{{ registration.project }}</td>
             <td><span class="status">{{ registration.status }}</span></td>
             <td>
-              {% if registration.status == "open" %}
+              {% if registration.status == "offen" %}
                 <form method="post" class="inline-actions">
                   <input type="hidden" name="email" value="{{ registration.email }}" />
                   <button class="button button-small" name="action" value="approve">
