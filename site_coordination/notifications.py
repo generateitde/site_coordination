@@ -9,30 +9,56 @@ from typing import Mapping
 from .config import SmtpConfig
 
 
-def build_credentials_email(recipient: str, password: str) -> EmailMessage:
+def build_credentials_email(
+    recipient: str,
+    password: str,
+    first_name: str,
+    last_name: str,
+) -> EmailMessage:
     """Build an email message containing user credentials."""
 
     message = EmailMessage()
-    message["Subject"] = "Your Research Platform Account"
+    message["Subject"] = (
+        "Your registration for the Reference Construction Site has been approved"
+    )
     message["To"] = recipient
+    full_name = " ".join(part for part in [first_name, last_name] if part).strip()
+    greeting_name = full_name or "there"
     message.set_content(
         "\n".join(
             [
-                "Hello,",
+                f"Dear {greeting_name},",
                 "",
-                "your registration was approved. Here are your credentials:",
+                "your registration has been approved.",
+                "",
+                "Below are your credentials for Check-In and Check-Out at the Reference Construction Site in Aachen.",
+                "",
                 f"Email: {recipient}",
                 f"Password: {password}",
                 "",
                 "Please keep this information secure.",
                 "",
                 "How to book a timeslot:",
-                "1) Log into the booking page.",
-                "2) Choose your timeslot and project details.",
-                "3) Submit the form to request approval.",
+                "",
+                "Log in to the booking page",
+                "https://construction-robotics.de/en/referencesite/members-area/booking/",
+                "Use the Members Area password: CARE_DFG_2026",
+                "",
+                "1) Enter your first name and last name",
+                "2) Enter the same email address as in this message",
+                "3) Enter the project you are working on",
+                "4) Select your requested timeslot",
+                "-->Choose the starting week",
+                "-->Choose the duration in weeks",
+                "",
+                "Complete all required fields",
+                "",
+                "Submit the form",
+                "Your request will be reviewed for approval",
                 "",
                 "Best regards,",
-                "Site Coordination Team",
+                "",
+                "CCR Reference Construction Site Coordination Team",
             ]
         )
     )
@@ -57,6 +83,32 @@ def build_booking_confirmation_email(recipient: str, booking: Mapping[str, str])
                 "",
                 "Please ensure you have your login credentials ready on the day of your visit",
                 "to enter the Reference Construction Site in Aachen.",
+                "",
+                "Best regards,",
+                "Site Coordination Team",
+            ]
+        )
+    )
+    return message
+
+
+def build_booking_denial_email(recipient: str, booking: Mapping[str, str]) -> EmailMessage:
+    """Build an email message denying a booking."""
+
+    message = EmailMessage()
+    message["Subject"] = "Your Booking Request"
+    message["To"] = recipient
+    message.set_content(
+        "\n".join(
+            [
+                "Hello,",
+                "",
+                "your booking request has been denied.",
+                f"Project: {booking.get('project', '')}",
+                f"Timeslot: {booking.get('timeslot_raw', '')}",
+                f"Duration (weeks): {booking.get('duration_weeks', '')}",
+                "",
+                "If you have any questions, please reach out to the coordination team.",
                 "",
                 "Best regards,",
                 "Site Coordination Team",

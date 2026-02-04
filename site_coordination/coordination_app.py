@@ -20,6 +20,7 @@ from site_coordination.email_parser import (
 )
 from site_coordination.notifications import (
     build_booking_confirmation_email,
+    build_booking_denial_email,
     build_credentials_email,
     send_email,
 )
@@ -132,6 +133,11 @@ def create_app() -> Flask:
 
     @app.route("/bookings/manage", methods=["GET", "POST"])
     def bookings_manage() -> str:
+        booking_preview = None
+        selected_booking_id = request.args.get("show_booking_id", "").strip()
+        preview_action = request.args.get("preview_action", "").strip()
+        if selected_booking_id:
+            booking_preview = _build_booking_preview(selected_booking_id, preview_action)
         if request.method == "POST":
             booking_id = request.form.get("booking_id", "")
             action = request.form.get("action", "")
@@ -139,12 +145,15 @@ def create_app() -> Flask:
                 _approve_booking(int(booking_id))
             elif booking_id and action == "deny":
                 _deny_booking(int(booking_id))
+            elif booking_id and action == "send_response":
+                _send_booking_response(int(booking_id))
         query = request.args.get("q", "").strip()
         bookings_list = _fetch_bookings(query)
         return render_template(
             "bookings_manage.html",
             bookings=bookings_list,
             query=query,
+            booking_preview=booking_preview,
         )
 
     @app.route("/activities", methods=["GET"])
@@ -329,7 +338,6 @@ def _approve_booking(booking_id: int) -> None:
             ("gebucht", booking_id),
         )
         connection.commit()
-    _send_booking_email(row["email"], row)
     flash(f"Booking approved for {row['email']}.", "success")
 
 
@@ -348,7 +356,20 @@ def _send_credentials_email(email: str, password: str) -> bool:
     if not config.host:
         flash("SMTP host not configured; credentials email not sent.", "error")
         return False
-    message = build_credentials_email(email, password)
+    with get_connection() as connection:
+        row = connection.execute(
+            "SELECT first_name, last_name FROM users WHERE email = ?",
+            (email,),
+        ).fetchone()
+    if row is None:
+        flash("User not found for credentials email.", "error")
+        return False
+    message = build_credentials_email(
+        email,
+        password,
+        first_name=row["first_name"],
+        last_name=row["last_name"],
+    )
     send_email(config, message)
     return True
 
@@ -376,25 +397,88 @@ def _send_user_credentials(email: str) -> None:
 def _build_credentials_preview(email: str) -> Optional[dict]:
     with get_connection() as connection:
         row = connection.execute(
-            "SELECT email, password FROM users WHERE email = ?",
+            "SELECT email, password, first_name, last_name FROM users WHERE email = ?",
             (email,),
         ).fetchone()
     if row is None:
         flash("User not found for credentials preview.", "error")
         return None
-    message = build_credentials_email(row["email"], row["password"])
+    message = build_credentials_email(
+        row["email"],
+        row["password"],
+        first_name=row["first_name"],
+        last_name=row["last_name"],
+    )
     subject = message["Subject"] or ""
     body = message.get_content()
     return {"email": row["email"], "subject": subject, "body": body}
 
 
-def _send_booking_email(email: str, row: sqlite3.Row) -> None:
+def _send_booking_email(email: str, row: sqlite3.Row, action: str) -> None:
     config = load_smtp_config()
     if not config.host:
         flash("SMTP host not configured; booking email not sent.", "error")
         return
-    message = build_booking_confirmation_email(email, row)
+    if action == "deny":
+        message = build_booking_denial_email(email, row)
+    else:
+        message = build_booking_confirmation_email(email, row)
     send_email(config, message)
+
+
+def _build_booking_preview(booking_id: str, action: str) -> Optional[dict]:
+    if not booking_id.isdigit():
+        flash("Booking not found for email preview.", "error")
+        return None
+    with get_connection() as connection:
+        row = connection.execute(
+            "SELECT * FROM bookings WHERE id = ?",
+            (int(booking_id),),
+        ).fetchone()
+    if row is None:
+        flash("Booking not found for email preview.", "error")
+        return None
+    resolved_action = action
+    if not resolved_action:
+        if row["status"] == "denied":
+            resolved_action = "deny"
+        elif row["status"] == "gebucht":
+            resolved_action = "approve"
+    if resolved_action not in {"approve", "deny"}:
+        flash("Select an approved or denied booking to preview the email.", "error")
+        return None
+    if resolved_action == "deny":
+        message = build_booking_denial_email(row["email"], row)
+    else:
+        message = build_booking_confirmation_email(row["email"], row)
+    subject = message["Subject"] or ""
+    body = message.get_content()
+    return {
+        "booking_id": row["id"],
+        "email": row["email"],
+        "subject": subject,
+        "body": body,
+    }
+
+
+def _send_booking_response(booking_id: int) -> None:
+    with get_connection() as connection:
+        row = connection.execute(
+            "SELECT * FROM bookings WHERE id = ?",
+            (booking_id,),
+        ).fetchone()
+    if row is None:
+        flash("Booking not found.", "error")
+        return
+    if row["status"] == "denied":
+        action = "deny"
+    elif row["status"] == "gebucht":
+        action = "approve"
+    else:
+        flash("Booking must be approved or denied before sending a response.", "error")
+        return
+    _send_booking_email(row["email"], row, action)
+    flash(f"Booking response sent to {row['email']}.", "success")
 
 
 def _analysis_selections() -> Iterable[str]:
