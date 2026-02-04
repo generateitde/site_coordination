@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import Optional, Tuple
+from zoneinfo import ZoneInfo
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 
@@ -96,10 +98,14 @@ def _fetch_user(email: str) -> Optional[Tuple[str, str]]:
 
 
 def _insert_activity(email: str, project: str, presence: str) -> None:
+    created_at = datetime.now(ZoneInfo("Europe/Berlin")).strftime("%Y-%m-%d %H:%M:%S")
     with get_connection() as connection:
         connection.execute(
-            "INSERT INTO activity_research (email, project, presence) VALUES (?, ?, ?)",
-            (email, project, presence),
+            """
+            INSERT INTO activity_research (email, project, presence, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (email, project, presence, created_at),
         )
         connection.commit()
 
