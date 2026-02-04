@@ -2,8 +2,34 @@
 
 {% block content %}
   <section class="card">
-    <h2>Service Provider</h2>
-    <p>Please contact site management for access.</p>
+    <h2>Service Provider Check-in / Check-out</h2>
+    <form method="post" class="form">
+      <label class="field">
+        <span>Name*</span>
+        <input type="text" name="name" required />
+      </label>
+      <label class="field">
+        <span>Company*</span>
+        <input type="text" name="company" required />
+      </label>
+      <label class="field">
+        <span>Mobile*</span>
+        <input type="tel" name="mobile" required />
+      </label>
+      <label class="field">
+        <span>Service*</span>
+        <input type="text" name="service" required />
+      </label>
+      <label class="field">
+        <span>On-site presence*</span>
+        <select name="presence" required>
+          <option value="" disabled selected>Please choose</option>
+          <option value="check-in">Check-in</option>
+          <option value="check-out">Check-out</option>
+        </select>
+      </label>
+      <button type="submit" class="button">Submit</button>
+    </form>
     <a class="link" href="{{ url_for('index') }}">Back to selection</a>
   </section>
 {% endblock %}
