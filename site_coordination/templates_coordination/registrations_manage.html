@@ -34,7 +34,11 @@
             <td>{{ registration.first_name }} {{ registration.last_name }}</td>
             <td>{{ registration.affiliation }}</td>
             <td>{{ registration.project }}</td>
-            <td><span class="status">{{ registration.status }}</span></td>
+            <td>
+              <span class="status">
+                {{ status_labels.get(registration.status, registration.status) }}
+              </span>
+            </td>
             <td>
               {% if registration.status in ["open", "offen"] %}
                 <form method="post" class="inline-actions">
