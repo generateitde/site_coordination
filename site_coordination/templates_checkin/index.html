@@ -15,4 +15,32 @@
       <button type="submit" class="button">Continue</button>
     </form>
   </section>
+  <section class="card qr-card">
+    <h2>QR Code</h2>
+    <p class="meta">Scan the code to open the Check-In webapp on this device.</p>
+    {% if qr_code_data_uri %}
+      <img class="qr-code" src="{{ qr_code_data_uri }}" alt="QR code for {{ base_url }}" />
+    {% else %}
+      <div class="qr-code" data-url="{{ base_url }}"></div>
+    {% endif %}
+    <p class="meta qr-url">{{ base_url }}</p>
+  </section>
+  {% if not qr_code_data_uri %}
+    <script src="{{ url_for('static', filename='qrcode.min.js') }}"></script>
+    <script>
+      window.addEventListener("load", () => {
+        const qrContainer = document.querySelector(".qr-code");
+        if (qrContainer && window.QRCode) {
+          const url = qrContainer.dataset.url;
+          if (url) {
+            new QRCode(qrContainer, {
+              text: url,
+              width: 180,
+              height: 180,
+            });
+          }
+        }
+      });
+    </script>
+  {% endif %}
 {% endblock %}
