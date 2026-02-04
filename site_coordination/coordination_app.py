@@ -225,6 +225,7 @@ def _ensure_database() -> None:
     with get_connection() as connection:
         db.init_db(connection)
         db.ensure_users_credentials_column(connection)
+        db.ensure_activity_research_name_columns(connection)
 
 
 def _fetch_registrations(query: str) -> list[sqlite3.Row]:
@@ -287,9 +288,12 @@ def _fetch_activity_research(query: str) -> list[sqlite3.Row]:
     sql = "SELECT * FROM activity_research"
     params: list[str] = []
     if query:
-        sql += " WHERE email LIKE ? OR project LIKE ? OR presence LIKE ?"
+        sql += (
+            " WHERE email LIKE ? OR first_name LIKE ? OR last_name LIKE ?"
+            " OR project LIKE ? OR presence LIKE ?"
+        )
         like_query = f"%{query}%"
-        params = [like_query] * 3
+        params = [like_query] * 5
     sql += " ORDER BY created_at DESC"
     with get_connection() as connection:
         return connection.execute(sql, params).fetchall()

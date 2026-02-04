@@ -103,6 +103,8 @@ def init_db(connection: sqlite3.Connection) -> None:
         CREATE TABLE IF NOT EXISTS activity_research (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT NOT NULL,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
             project TEXT NOT NULL,
             presence TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -137,6 +139,25 @@ def ensure_users_credentials_column(connection: sqlite3.Connection) -> None:
         connection.execute(
             "ALTER TABLE users ADD COLUMN credentials_sent INTEGER NOT NULL DEFAULT 0"
         )
+        connection.commit()
+
+
+def ensure_activity_research_name_columns(connection: sqlite3.Connection) -> None:
+    """Ensure activity_research table has first_name and last_name columns."""
+
+    columns = {
+        row["name"]
+        for row in connection.execute("PRAGMA table_info(activity_research)").fetchall()
+    }
+    if "first_name" not in columns:
+        connection.execute(
+            "ALTER TABLE activity_research ADD COLUMN first_name TEXT NOT NULL DEFAULT ''"
+        )
+    if "last_name" not in columns:
+        connection.execute(
+            "ALTER TABLE activity_research ADD COLUMN last_name TEXT NOT NULL DEFAULT ''"
+        )
+    if "first_name" not in columns or "last_name" not in columns:
         connection.commit()
 
 

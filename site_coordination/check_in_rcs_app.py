@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 
+from site_coordination import db
 from site_coordination.db_tools import get_connection
 
 
@@ -17,6 +18,7 @@ def create_app() -> Flask:
     """Create the Flask application."""
 
     base_dir = Path(__file__).resolve().parent
+    _ensure_database()
     app = Flask(
         __name__,
         template_folder=str(base_dir / "templates_checkin"),
@@ -58,6 +60,8 @@ def create_app() -> Flask:
             else:
                 session["user_email"] = email
                 session["user_project"] = user[1]
+                session["user_first_name"] = user[2]
+                session["user_last_name"] = user[3]
                 return redirect(url_for("checkin"))
         return render_template("login.html")
 
@@ -66,15 +70,36 @@ def create_app() -> Flask:
         if "user_email" not in session:
             return redirect(url_for("login"))
         email = session["user_email"]
-        project = session.get("user_project", "")
+        first_name = session.get("user_first_name", "")
+        last_name = session.get("user_last_name", "")
+        projects = _fetch_booking_projects(email)
+        fallback_project = session.get("user_project", "")
+        if not projects and fallback_project:
+            projects = [fallback_project]
+        selected_project = session.get("selected_project")
+        if selected_project not in projects:
+            selected_project = projects[0] if projects else ""
         if request.method == "POST":
             presence = request.form.get("presence")
-            if presence in {"check-in", "check-out"}:
-                _insert_activity(email, project, presence)
+            submitted_project = request.form.get("project", "")
+            if submitted_project in projects:
+                selected_project = submitted_project
+            elif submitted_project and not projects:
+                selected_project = submitted_project
+            if not selected_project:
+                flash("Bitte ein Projekt auswählen.", "error")
+            elif presence in {"check-in", "check-out"}:
+                _insert_activity(email, first_name, last_name, selected_project, presence)
+                session["selected_project"] = selected_project
                 flash("Eintrag gespeichert.", "success")
             else:
                 flash("Bitte eine gültige Auswahl treffen.", "error")
-        return render_template("checkin.html", email=email, project=project)
+        return render_template(
+            "checkin.html",
+            email=email,
+            project=selected_project,
+            projects=projects,
+        )
 
     @app.get("/logout")
     def logout() -> str:
@@ -84,30 +109,56 @@ def create_app() -> Flask:
     return app
 
 
-def _fetch_user(email: str) -> Optional[Tuple[str, str]]:
+def _fetch_user(email: str) -> Optional[Tuple[str, str, str, str]]:
     if not email:
         return None
     with get_connection() as connection:
         row = connection.execute(
-            "SELECT password, project FROM users WHERE email = ?",
+            "SELECT password, project, first_name, last_name FROM users WHERE email = ?",
             (email,),
         ).fetchone()
     if row is None:
         return None
-    return row["password"], row["project"]
+    return row["password"], row["project"], row["first_name"], row["last_name"]
 
 
-def _insert_activity(email: str, project: str, presence: str) -> None:
+def _fetch_booking_projects(email: str) -> list[str]:
+    if not email:
+        return []
+    with get_connection() as connection:
+        rows = connection.execute(
+            "SELECT DISTINCT project FROM bookings WHERE email = ? ORDER BY project",
+            (email,),
+        ).fetchall()
+    return [row["project"] for row in rows]
+
+
+def _insert_activity(
+    email: str,
+    first_name: str,
+    last_name: str,
+    project: str,
+    presence: str,
+) -> None:
     created_at = datetime.now(ZoneInfo("Europe/Berlin")).strftime("%Y-%m-%d %H:%M:%S")
     with get_connection() as connection:
         connection.execute(
             """
-            INSERT INTO activity_research (email, project, presence, created_at)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO activity_research (
+                email, first_name, last_name, project, presence, created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (email, project, presence, created_at),
+            (email, first_name, last_name, project, presence, created_at),
         )
         connection.commit()
+
+
+def _ensure_database() -> None:
+    with get_connection() as connection:
+        db.init_db(connection)
+        db.ensure_users_credentials_column(connection)
+        db.ensure_activity_research_name_columns(connection)
 
 
 if __name__ == "__main__":

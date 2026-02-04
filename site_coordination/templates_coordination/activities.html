@@ -31,6 +31,8 @@
         {% if table == "research" %}
           <tr>
             <th>Email</th>
+            <th>First name</th>
+            <th>Last name</th>
             <th>Project</th>
             <th>Presence</th>
             <th>Created</th>
@@ -50,6 +52,8 @@
           {% if table == "research" %}
             <tr>
               <td>{{ row.email }}</td>
+              <td>{{ row.first_name }}</td>
+              <td>{{ row.last_name }}</td>
               <td>{{ row.project }}</td>
               <td>{{ row.presence }}</td>
               <td>{{ row.created_at }}</td>
@@ -65,7 +69,9 @@
           {% endif %}
         {% else %}
           <tr>
-            <td colspan="5" class="meta">No activity found.</td>
+            <td colspan="{% if table == 'research' %}6{% else %}5{% endif %}" class="meta">
+              No activity found.
+            </td>
           </tr>
         {% endfor %}
       </tbody>
