@@ -43,7 +43,12 @@ def approve_registration(
     )
     db.update_registration_status(connection, email, "approved")
 
-    message = build_credentials_email(email, password)
+    message = build_credentials_email(
+        email,
+        password,
+        first_name=row["first_name"],
+        last_name=row["last_name"],
+    )
     send_email(smtp_config, message)
 
     return ApprovalResult(email=email, status="approved")

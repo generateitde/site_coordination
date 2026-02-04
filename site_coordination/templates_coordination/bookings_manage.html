@@ -39,12 +39,19 @@
                 <form method="post" class="inline-actions">
                   <input type="hidden" name="booking_id" value="{{ booking.id }}" />
                   <button class="button button-small" name="action" value="approve">
-                    Confirm &amp; notify
+                    Confirm
                   </button>
                   <button class="button button-small button-secondary" name="action" value="deny">
                     Deny
                   </button>
                 </form>
+              {% elif booking.status in ["gebucht", "denied"] %}
+                <a
+                  class="button button-small button-secondary"
+                  href="{{ url_for('bookings_manage', q=query, show_booking_id=booking.id) }}"
+                >
+                  Show email text
+                </a>
               {% else %}
                 <span class="meta">No action</span>
               {% endif %}
@@ -58,5 +65,37 @@
       </tbody>
     </table>
   </section>
+  {% if booking_preview %}
+    <section class="card">
+      <h3>Booking response preview</h3>
+      <p class="meta">
+        Use this content to respond to the booking request.
+      </p>
+      <div class="form">
+        <label class="field">
+          Recipient
+          <input type="text" value="{{ booking_preview.email }}" readonly />
+        </label>
+        <label class="field">
+          Subject
+          <input type="text" value="{{ booking_preview.subject }}" readonly />
+        </label>
+        <label class="field">
+          Body
+          <textarea rows="10" readonly>{{ booking_preview.body }}</textarea>
+        </label>
+      </div>
+      {% if booking_preview.email %}
+        <form method="post" class="inline-actions">
+          <input type="hidden" name="booking_id" value="{{ booking_preview.booking_id }}" />
+          <button class="button button-small" name="action" value="send_response">
+            Send response
+          </button>
+        </form>
+      {% else %}
+        <p class="meta">No email is linked to this booking.</p>
+      {% endif %}
+    </section>
+  {% endif %}
   <a class="link" href="{{ url_for('bookings') }}">Back to bookings</a>
 {% endblock %}
