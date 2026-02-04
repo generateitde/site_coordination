@@ -208,6 +208,10 @@ body {
   word-break: break-all;
 }
 
+.ticket-details p {
+  margin: 4px 0;
+}
+
 .stats-grid {
   display: grid;
   gap: 16px;

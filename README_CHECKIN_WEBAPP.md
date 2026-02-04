@@ -36,6 +36,9 @@
    table in `site_coordination.sqlite`.
 3. **Page 3 (Check-in/Check-out):** Choose the dropdown value and click **Send** to store the entry in
    `activity_research`.
+4. **Service provider check-in:** Fill out name, company, mobile, service, and check-in/out to store
+   entries in `activity_service_provider`.
+5. **Day pass:** On check-in, a day pass PDF is shown and can be downloaded.
 
 ## Notes
 

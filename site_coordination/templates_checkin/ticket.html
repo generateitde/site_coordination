@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="card">
+    <h2>Day Pass</h2>
+    <p class="meta">Issued at: {{ ticket.created_at }}</p>
+    <div class="ticket-details">
+      {% if ticket.type == "researcher" %}
+        <p><strong>Name:</strong> {{ ticket.first_name }} {{ ticket.last_name }}</p>
+        <p><strong>Email:</strong> {{ ticket.email }}</p>
+        <p><strong>Affiliation:</strong> {{ ticket.affiliation }}</p>
+        <p><strong>Project:</strong> {{ ticket.project }}</p>
+      {% else %}
+        <p><strong>Name:</strong> {{ ticket.name }}</p>
+        <p><strong>Company:</strong> {{ ticket.company }}</p>
+        <p><strong>Mobile:</strong> {{ ticket.mobile }}</p>
+        <p><strong>Service:</strong> {{ ticket.service }}</p>
+      {% endif %}
+    </div>
+    <p class="meta">Please screenshot this pass or download the PDF to show as ID.</p>
+    <div class="inline-actions">
+      <a class="button" href="{{ download_url }}">Download Day Pass (PDF)</a>
+      <a class="button button-secondary" href="{{ url_for('index') }}">Back to selection</a>
+    </div>
+  </section>
+{% endblock %}

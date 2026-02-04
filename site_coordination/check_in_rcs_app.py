@@ -64,8 +64,33 @@ def create_app() -> Flask:
             return redirect(url_for("login"))
         return redirect(url_for("service_provider"))
 
-    @app.get("/service-provider")
+    @app.route("/service-provider", methods=["GET", "POST"])
     def service_provider() -> str:
+        if request.method == "POST":
+            name = request.form.get("name", "").strip()
+            company = request.form.get("company", "").strip()
+            mobile = request.form.get("mobile", "").strip()
+            service = request.form.get("service", "").strip()
+            presence = request.form.get("presence")
+            if not all([name, company, mobile, service]):
+                flash("Bitte alle Felder ausfüllen.", "error")
+            elif presence not in {"check-in", "check-out"}:
+                flash("Bitte eine gültige Auswahl treffen.", "error")
+            else:
+                created_at = _insert_service_provider_activity(
+                    name, company, mobile, service, presence
+                )
+                if presence == "check-in":
+                    session["ticket"] = {
+                        "type": "service-provider",
+                        "name": name,
+                        "company": company,
+                        "mobile": mobile,
+                        "service": service,
+                        "created_at": created_at,
+                    }
+                    return redirect(url_for("ticket"))
+                flash("Eintrag gespeichert.", "success")
         return render_template("service_provider.html")
 
     @app.get("/registrations")
@@ -110,6 +135,7 @@ def create_app() -> Flask:
                 session["user_project"] = user[1]
                 session["user_first_name"] = user[2]
                 session["user_last_name"] = user[3]
+                session["user_affiliation"] = user[4]
                 return redirect(url_for("checkin"))
         return render_template("login.html")
 
@@ -137,8 +163,21 @@ def create_app() -> Flask:
             if not selected_project:
                 flash("Bitte ein Projekt auswählen.", "error")
             elif presence in {"check-in", "check-out"}:
-                _insert_activity(email, first_name, last_name, selected_project, presence)
+                created_at = _insert_activity(
+                    email, first_name, last_name, selected_project, presence
+                )
                 session["selected_project"] = selected_project
+                if presence == "check-in":
+                    session["ticket"] = {
+                        "type": "researcher",
+                        "first_name": first_name,
+                        "last_name": last_name,
+                        "email": email,
+                        "affiliation": session.get("user_affiliation", ""),
+                        "project": selected_project,
+                        "created_at": created_at,
+                    }
+                    return redirect(url_for("ticket"))
                 flash("Eintrag gespeichert.", "success")
             else:
                 flash("Bitte eine gültige Auswahl treffen.", "error")
@@ -154,20 +193,61 @@ def create_app() -> Flask:
         session.clear()
         return redirect(url_for("index"))
 
+    @app.get("/ticket")
+    def ticket() -> str:
+        ticket_data = session.get("ticket")
+        if not ticket_data:
+            flash("Kein Ticket verfügbar.", "error")
+            return redirect(url_for("index"))
+        return render_template(
+            "ticket.html",
+            ticket=ticket_data,
+            download_url=url_for("ticket_pdf"),
+        )
+
+    @app.get("/ticket.pdf")
+    def ticket_pdf() -> Response:
+        ticket_data = session.get("ticket")
+        if not ticket_data:
+            return Response("Kein Ticket verfügbar.", status=404)
+        if importlib.util.find_spec("fpdf") is None:
+            return Response(
+                "PDF generation requires fpdf2. Install dependencies and retry.",
+                status=503,
+                mimetype="text/plain",
+            )
+        pdf_bytes = _build_ticket_pdf(ticket_data)
+        return send_file(
+            io.BytesIO(pdf_bytes),
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name="day-pass.pdf",
+        )
+
     return app
 
 
-def _fetch_user(email: str) -> Optional[Tuple[str, str, str, str]]:
+def _fetch_user(email: str) -> Optional[Tuple[str, str, str, str, str]]:
     if not email:
         return None
     with get_connection() as connection:
         row = connection.execute(
-            "SELECT password, project, first_name, last_name FROM users WHERE email = ?",
+            """
+            SELECT password, project, first_name, last_name, affiliation
+            FROM users
+            WHERE email = ?
+            """,
             (email,),
         ).fetchone()
     if row is None:
         return None
-    return row["password"], row["project"], row["first_name"], row["last_name"]
+    return (
+        row["password"],
+        row["project"],
+        row["first_name"],
+        row["last_name"],
+        row["affiliation"],
+    )
 
 
 def _fetch_booking_projects(email: str) -> list[str]:
@@ -187,7 +267,7 @@ def _insert_activity(
     last_name: str,
     project: str,
     presence: str,
-) -> None:
+) -> str:
     created_at = datetime.now(ZoneInfo("Europe/Berlin")).strftime("%Y-%m-%d %H:%M:%S")
     with get_connection() as connection:
         connection.execute(
@@ -200,6 +280,29 @@ def _insert_activity(
             (email, first_name, last_name, project, presence, created_at),
         )
         connection.commit()
+    return created_at
+
+
+def _insert_service_provider_activity(
+    name: str,
+    company: str,
+    mobile: str,
+    service: str,
+    presence: str,
+) -> str:
+    created_at = datetime.now(ZoneInfo("Europe/Berlin")).strftime("%Y-%m-%d %H:%M:%S")
+    with get_connection() as connection:
+        connection.execute(
+            """
+            INSERT INTO activity_service_provider (
+                name, company, mobile, service, presence, created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (name, company, mobile, service, presence, created_at),
+        )
+        connection.commit()
+    return created_at
 
 
 def _ensure_database() -> None:
@@ -254,6 +357,37 @@ def _get_lan_ip() -> str | None:
             return sock.getsockname()[0]
     except OSError:
         return None
+
+
+def _build_ticket_pdf(ticket: dict) -> bytes:
+    fpdf_module = importlib.import_module("fpdf")
+    pdf = fpdf_module.FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=16)
+    pdf.cell(0, 10, "Day Pass", ln=1)
+    pdf.set_font("Helvetica", size=12)
+    pdf.cell(0, 8, f"Issued at: {ticket.get('created_at', '')}", ln=1)
+    pdf.ln(4)
+    if ticket.get("type") == "researcher":
+        rows = [
+            ("Name", f"{ticket.get('first_name', '')} {ticket.get('last_name', '')}"),
+            ("Email", ticket.get("email", "")),
+            ("Affiliation", ticket.get("affiliation", "")),
+            ("Project", ticket.get("project", "")),
+        ]
+    else:
+        rows = [
+            ("Name", ticket.get("name", "")),
+            ("Company", ticket.get("company", "")),
+            ("Mobile", ticket.get("mobile", "")),
+            ("Service", ticket.get("service", "")),
+        ]
+    for label, value in rows:
+        pdf.set_font("Helvetica", style="B", size=11)
+        pdf.cell(40, 8, f"{label}:")
+        pdf.set_font("Helvetica", size=11)
+        pdf.multi_cell(0, 8, value or "-")
+    return bytes(pdf.output(dest="S"))
 
 
 if __name__ == "__main__":
