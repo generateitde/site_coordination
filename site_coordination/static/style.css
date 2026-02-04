@@ -185,6 +185,29 @@ body {
   color: #5d6470;
 }
 
+.qr-card {
+  align-items: center;
+  text-align: center;
+}
+
+.qr-card .button {
+  width: fit-content;
+}
+
+.qr-code {
+  width: 180px;
+  height: 180px;
+}
+
+.qr-code img {
+  width: 100%;
+  height: 100%;
+}
+
+.qr-url {
+  word-break: break-all;
+}
+
 .stats-grid {
   display: grid;
   gap: 16px;

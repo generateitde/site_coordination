@@ -3,12 +3,27 @@
 from __future__ import annotations
 
 import os
+import base64
+import importlib
+import importlib.util
+import io
+import socket
+from flask import (
+    Flask,
+    Response,
+    flash,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    session,
+    url_for,
+)
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Tuple
 from zoneinfo import ZoneInfo
 
-from flask import Flask, flash, redirect, render_template, request, session, url_for
 
 from site_coordination import db
 from site_coordination.db_tools import get_connection
@@ -28,7 +43,18 @@ def create_app() -> Flask:
 
     @app.get("/")
     def index() -> str:
-        return render_template("index.html")
+        base_url = _get_base_url(request.host_url)
+        base_url = base_url.strip()
+        if not base_url.endswith("/"):
+            base_url = f"{base_url}/"
+        qr_code_data_uri = _build_qr_code_data_uri(base_url)
+        qr_download_url = url_for("qr_code_png")
+        return render_template(
+            "index.html",
+            base_url=base_url,
+            qr_code_data_uri=qr_code_data_uri,
+            qr_download_url=qr_download_url,
+        )
 
     @app.post("/select")
     def select_role():
@@ -48,6 +74,27 @@ def create_app() -> Flask:
     @app.get("/bookings")
     def bookings() -> str:
         return render_template("bookings.html")
+
+    @app.get("/qr.png")
+    def qr_code_png() -> Response:
+        base_url = _get_base_url(request.host_url)
+        base_url = base_url.strip()
+        if not base_url.endswith("/"):
+            base_url = f"{base_url}/"
+        qr_data = _build_qr_code_data_uri(base_url)
+        if not qr_data:
+            return Response(
+                "QR code generation requires qrcode[pil]. Install dependencies and retry.",
+                status=503,
+                mimetype="text/plain",
+            )
+        image_bytes = base64.b64decode(qr_data.split(",", 1)[1])
+        return send_file(
+            io.BytesIO(image_bytes),
+            mimetype="image/png",
+            as_attachment=True,
+            download_name="checkin-qr.png",
+        )
 
     @app.route("/login", methods=["GET", "POST"])
     def login() -> str:
@@ -159,6 +206,53 @@ def _ensure_database() -> None:
         db.init_db(connection)
         db.ensure_users_credentials_column(connection)
         db.ensure_activity_research_name_columns(connection)
+
+
+def _build_qr_code_data_uri(url: str) -> str | None:
+    if importlib.util.find_spec("qrcode") is None:
+        return None
+    qrcode = importlib.import_module("qrcode")
+    qr_image = qrcode.make(url)
+    buffer = io.BytesIO()
+    qr_image.save(buffer, format="PNG")
+    encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    return f"data:image/png;base64,{encoded}"
+
+
+def _get_base_url(request_url: str) -> str:
+    base_url = os.environ.get("SITE_COORDINATION_BASE_URL")
+    if base_url:
+        return base_url
+    return _resolve_base_url(request_url)
+
+
+def _resolve_base_url(request_url: str) -> str:
+    if "127.0.0.1" in request_url or "localhost" in request_url:
+        resolved = _local_network_url(request_url)
+        if resolved:
+            return resolved
+    return request_url
+
+
+def _local_network_url(request_url: str) -> str | None:
+    try:
+        host = request_url.split("//", 1)[1].split("/", 1)[0]
+        port = host.split(":", 1)[1] if ":" in host else "5000"
+    except IndexError:
+        port = "5000"
+    ip = _get_lan_ip()
+    if not ip:
+        return None
+    return f"http://{ip}:{port}/"
+
+
+def _get_lan_ip() -> str | None:
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.connect(("8.8.8.8", 80))
+            return sock.getsockname()[0]
+    except OSError:
+        return None
 
 
 if __name__ == "__main__":
