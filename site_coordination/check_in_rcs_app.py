@@ -367,7 +367,7 @@ def _build_ticket_pdf(ticket: dict) -> bytes:
     pdf.set_font("Helvetica", size=16)
     pdf.cell(0, 10, "Day Pass", ln=1)
     pdf.set_font("Helvetica", size=12)
-    pdf.cell(0, 8, f"Issued at: {ticket.get('created_at', '')}", ln=1)
+    pdf.cell(0, 8, f"Checked in at: {ticket.get('created_at', '')}", ln=1)
     pdf.ln(4)
     if ticket.get("type") == "researcher":
         rows = [
