@@ -3,7 +3,7 @@
 {% block content %}
   <section class="card">
     <h2>Day Pass</h2>
-    <p class="meta">Issued at: {{ ticket.created_at }}</p>
+    <p class="meta">Checked in at: {{ ticket.created_at }}</p>
     <div class="ticket-details">
       {% if ticket.type == "researcher" %}
         <p><strong>Name:</strong> {{ ticket.first_name }} {{ ticket.last_name }}</p>
