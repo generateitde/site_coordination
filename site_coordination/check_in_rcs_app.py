@@ -363,6 +363,7 @@ def _build_ticket_pdf(ticket: dict) -> bytes:
     fpdf_module = importlib.import_module("fpdf")
     pdf = fpdf_module.FPDF()
     pdf.add_page()
+    page_width = pdf.w - pdf.l_margin - pdf.r_margin
     pdf.set_font("Helvetica", size=16)
     pdf.cell(0, 10, "Day Pass", ln=1)
     pdf.set_font("Helvetica", size=12)
@@ -382,11 +383,17 @@ def _build_ticket_pdf(ticket: dict) -> bytes:
             ("Mobile", ticket.get("mobile", "")),
             ("Service", ticket.get("service", "")),
         ]
+    label_width = min(40, page_width * 0.35)
+    value_width = max(page_width - label_width, 40)
     for label, value in rows:
         pdf.set_font("Helvetica", style="B", size=11)
-        pdf.cell(40, 8, f"{label}:")
+        pdf.cell(label_width, 8, f"{label}:")
         pdf.set_font("Helvetica", size=11)
-        pdf.multi_cell(0, 8, value or "-")
+        x_position = pdf.get_x()
+        y_position = pdf.get_y()
+        pdf.multi_cell(value_width, 8, value or "-")
+        pdf.set_xy(x_position + value_width, y_position)
+        pdf.ln(0)
     return bytes(pdf.output(dest="S"))
 
 
