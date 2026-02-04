@@ -33,7 +33,11 @@
             <td>{{ booking.first_name }} {{ booking.last_name }}</td>
             <td>{{ booking.project }}</td>
             <td>{{ booking.timeslot_raw }}</td>
-            <td><span class="status">{{ booking.status }}</span></td>
+            <td>
+              <span class="status">
+                {{ status_labels.get(booking.status, booking.status) }}
+              </span>
+            </td>
             <td>
               {% if booking.status == "zu_ueberpruefen" %}
                 <form method="post" class="inline-actions">

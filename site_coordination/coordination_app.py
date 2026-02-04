@@ -87,10 +87,17 @@ def create_app() -> Flask:
                 _deny_registration(email)
         query = request.args.get("q", "").strip()
         registrations = _fetch_registrations(query)
+        status_labels = {
+            "open": "Open",
+            "offen": "Open",
+            "registriert": "Registered",
+            "denied": "Denied",
+        }
         return render_template(
             "registrations_manage.html",
             registrations=registrations,
             query=query,
+            status_labels=status_labels,
         )
 
     @app.route("/users/manage", methods=["GET", "POST"])
@@ -149,11 +156,17 @@ def create_app() -> Flask:
                 _send_booking_response(int(booking_id))
         query = request.args.get("q", "").strip()
         bookings_list = _fetch_bookings(query)
+        status_labels = {
+            "zu_ueberpruefen": "Pending review",
+            "gebucht": "Booked",
+            "denied": "Denied",
+        }
         return render_template(
             "bookings_manage.html",
             bookings=bookings_list,
             query=query,
             booking_preview=booking_preview,
+            status_labels=status_labels,
         )
 
     @app.route("/activities", methods=["GET"])
