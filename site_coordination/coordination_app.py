@@ -290,10 +290,10 @@ def _fetch_activity_research(query: str) -> list[sqlite3.Row]:
     if query:
         sql += (
             " WHERE email LIKE ? OR first_name LIKE ? OR last_name LIKE ?"
-            " OR project LIKE ? OR presence LIKE ?"
+            " OR project LIKE ? OR presence LIKE ? OR created_at LIKE ?"
         )
-        like_query = f"%{query}%"
-        params = [like_query] * 5
+        like_query, created_query = _activity_like_terms(query)
+        params = [like_query] * 5 + [created_query]
     sql += " ORDER BY created_at DESC"
     with get_connection() as connection:
         return connection.execute(sql, params).fetchall()
@@ -303,12 +303,39 @@ def _fetch_activity_service(query: str) -> list[sqlite3.Row]:
     sql = "SELECT * FROM activity_service_provider"
     params: list[str] = []
     if query:
-        sql += " WHERE name LIKE ? OR company LIKE ? OR service LIKE ? OR presence LIKE ?"
-        like_query = f"%{query}%"
-        params = [like_query] * 4
+        sql += (
+            " WHERE name LIKE ? OR company LIKE ? OR service LIKE ? OR presence LIKE ?"
+            " OR created_at LIKE ?"
+        )
+        like_query, created_query = _activity_like_terms(query)
+        params = [like_query] * 4 + [created_query]
     sql += " ORDER BY created_at DESC"
     with get_connection() as connection:
         return connection.execute(sql, params).fetchall()
+
+
+def _activity_like_terms(query: str) -> tuple[str, str]:
+    query = query.strip()
+    if not query:
+        return ("", "")
+    like_query = f"%{query}%"
+    normalized_date = _normalize_date_query(query)
+    created_query = like_query
+    if normalized_date and normalized_date != query:
+        created_query = f"%{normalized_date}%"
+    return like_query, created_query
+
+
+def _normalize_date_query(query: str) -> str | None:
+    parts = query.split(".")
+    if len(parts) != 3:
+        return None
+    day, month, year = (part.strip() for part in parts)
+    if not (day.isdigit() and month.isdigit() and year.isdigit()):
+        return None
+    if len(year) != 4:
+        return None
+    return f"{year}-{month.zfill(2)}-{day.zfill(2)}"
 
 
 def _approve_registration(email: str) -> None:
