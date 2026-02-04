@@ -65,6 +65,14 @@ def build_credentials_email(
     return message
 
 
+def _booking_value(booking: Mapping[str, str], key: str) -> str:
+    if hasattr(booking, "get"):
+        return booking.get(key, "")
+    if key in booking.keys():
+        return booking[key]
+    return ""
+
+
 def build_booking_confirmation_email(recipient: str, booking: Mapping[str, str]) -> EmailMessage:
     """Build an email message confirming a booking."""
 
@@ -77,9 +85,9 @@ def build_booking_confirmation_email(recipient: str, booking: Mapping[str, str])
                 "Hello,",
                 "",
                 "your booking request has been approved.",
-                f"Project: {booking.get('project', '')}",
-                f"Timeslot: {booking.get('timeslot_raw', '')}",
-                f"Duration (weeks): {booking.get('duration_weeks', '')}",
+                f"Project: {_booking_value(booking, 'project')}",
+                f"Timeslot: {_booking_value(booking, 'timeslot_raw')}",
+                f"Duration (weeks): {_booking_value(booking, 'duration_weeks')}",
                 "",
                 "Please ensure you have your login credentials ready on the day of your visit",
                 "to enter the Reference Construction Site in Aachen.",
@@ -104,9 +112,9 @@ def build_booking_denial_email(recipient: str, booking: Mapping[str, str]) -> Em
                 "Hello,",
                 "",
                 "your booking request has been denied.",
-                f"Project: {booking.get('project', '')}",
-                f"Timeslot: {booking.get('timeslot_raw', '')}",
-                f"Duration (weeks): {booking.get('duration_weeks', '')}",
+                f"Project: {_booking_value(booking, 'project')}",
+                f"Timeslot: {_booking_value(booking, 'timeslot_raw')}",
+                f"Duration (weeks): {_booking_value(booking, 'duration_weeks')}",
                 "",
                 "If you have any questions, please reach out to the coordination team.",
                 "",
