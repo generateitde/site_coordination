@@ -41,6 +41,8 @@
 
 - Failed logins show an error message.
 - For production, set `SITE_COORDINATION_SECRET`.
+- For a local network demo QR code, set `SITE_COORDINATION_BASE_URL` to your LAN IP
+  (for example, `http://192.168.1.50:5001/`) so other devices can scan the code.
 
 ## Troubleshooting
 
