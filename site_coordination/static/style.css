@@ -44,6 +44,17 @@ body {
   gap: 16px;
 }
 
+.form-inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.form-inline .field {
+  flex: 1 1 240px;
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -107,6 +118,36 @@ body {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.table-card {
+  width: min(980px, 96vw);
+  overflow-x: auto;
+}
+
+.table-card table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.table-card th,
+.table-card td {
+  padding: 12px 10px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #e6e9ef;
+  font-size: 14px;
+}
+
+.table-card thead th {
+  font-size: 14px;
+  color: #1d1f24;
+  background: #f7f9fc;
+}
+
+.table-card tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .link {
