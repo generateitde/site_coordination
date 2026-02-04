@@ -18,27 +18,29 @@
   <section class="card qr-card">
     <h2>QR Code</h2>
     <p class="meta">Scan the code to open the Check-In webapp on this device.</p>
-    <div class="qr-code" data-url="{{ base_url }}"></div>
+    {% if qr_code_data_uri %}
+      <img class="qr-code" src="{{ qr_code_data_uri }}" alt="QR code for {{ base_url }}" />
+    {% else %}
+      <div class="qr-code" data-url="{{ base_url }}"></div>
+    {% endif %}
     <p class="meta qr-url">{{ base_url }}</p>
   </section>
-
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
-    integrity="sha512-Iq3L1yWFGnFPQG4iZq3U7m2DC1OV8LuCGP2x3dP1Of+Fu2M4pG6n7Hd5t3ES7Vh09Sk+Qw9S0sK4ef0A3n3v8Q=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  ></script>
-  <script>
-    const qrContainer = document.querySelector(".qr-code");
-    if (qrContainer) {
-      const url = qrContainer.dataset.url;
-      if (url) {
-        new QRCode(qrContainer, {
-          text: url,
-          width: 180,
-          height: 180,
-        });
-      }
-    }
-  </script>
+  {% if not qr_code_data_uri %}
+    <script src="{{ url_for('static', filename='qrcode.min.js') }}"></script>
+    <script>
+      window.addEventListener("load", () => {
+        const qrContainer = document.querySelector(".qr-code");
+        if (qrContainer && window.QRCode) {
+          const url = qrContainer.dataset.url;
+          if (url) {
+            new QRCode(qrContainer, {
+              text: url,
+              width: 180,
+              height: 180,
+            });
+          }
+        }
+      });
+    </script>
+  {% endif %}
 {% endblock %}

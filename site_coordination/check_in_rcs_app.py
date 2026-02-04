@@ -3,6 +3,10 @@
 from __future__ import annotations
 
 import os
+import base64
+import importlib
+import importlib.util
+import io
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Tuple
@@ -34,7 +38,12 @@ def create_app() -> Flask:
         base_url = base_url.strip()
         if not base_url.endswith("/"):
             base_url = f"{base_url}/"
-        return render_template("index.html", base_url=base_url)
+        qr_code_data_uri = _build_qr_code_data_uri(base_url)
+        return render_template(
+            "index.html",
+            base_url=base_url,
+            qr_code_data_uri=qr_code_data_uri,
+        )
 
     @app.post("/select")
     def select_role():
@@ -165,6 +174,17 @@ def _ensure_database() -> None:
         db.init_db(connection)
         db.ensure_users_credentials_column(connection)
         db.ensure_activity_research_name_columns(connection)
+
+
+def _build_qr_code_data_uri(url: str) -> str | None:
+    if importlib.util.find_spec("qrcode") is None:
+        return None
+    qrcode = importlib.import_module("qrcode")
+    qr_image = qrcode.make(url)
+    buffer = io.BytesIO()
+    qr_image.save(buffer, format="PNG")
+    encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    return f"data:image/png;base64,{encoded}"
 
 
 if __name__ == "__main__":
