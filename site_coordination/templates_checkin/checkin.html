@@ -6,6 +6,20 @@
     <p class="meta">Signed in as: {{ email }}{% if project %} · Project: {{ project }}{% endif %}</p>
     <form method="post" class="form">
       <label class="field">
+        <span>Project*</span>
+        <select name="project" required {% if not projects %}disabled{% endif %}>
+          {% if projects %}
+            {% for option in projects %}
+              <option value="{{ option }}" {% if option == project %}selected{% endif %}>
+                {{ option }}
+              </option>
+            {% endfor %}
+          {% else %}
+            <option value="">No projects found</option>
+          {% endif %}
+        </select>
+      </label>
+      <label class="field">
         <span>On-site presence*</span>
         <select name="presence" required>
           <option value="" disabled selected>Please choose</option>
