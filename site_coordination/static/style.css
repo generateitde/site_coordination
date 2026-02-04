@@ -190,6 +190,10 @@ body {
   text-align: center;
 }
 
+.qr-card .button {
+  width: fit-content;
+}
+
 .qr-code {
   width: 180px;
   height: 180px;

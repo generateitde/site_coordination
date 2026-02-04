@@ -18,7 +18,17 @@
   <section class="card qr-card">
     <h2>QR Code</h2>
     <p class="meta">Scan the code to open the Check-In webapp on this device.</p>
-    <img class="qr-code" src="{{ qr_code_image_url }}" alt="QR code for {{ base_url }}" />
+    {% if qr_code_data_uri %}
+      <img class="qr-code" src="{{ qr_code_data_uri }}" alt="QR code for {{ base_url }}" />
+      <a class="button button-secondary button-small" href="{{ qr_download_url }}">
+        Download QR Code (PNG)
+      </a>
+    {% else %}
+      <p class="meta">
+        QR code generation needs the <code>qrcode[pil]</code> dependency. Install requirements and
+        refresh the page.
+      </p>
+    {% endif %}
     <p class="meta qr-url">{{ base_url }}</p>
   </section>
 {% endblock %}

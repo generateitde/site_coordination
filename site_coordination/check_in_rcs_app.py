@@ -8,13 +8,23 @@ import importlib
 import importlib.util
 import io
 import socket
+from flask import (
+    Flask,
+    Response,
+    flash,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    session,
+    url_for,
+)
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Tuple
 from zoneinfo import ZoneInfo
 from urllib.parse import quote_plus
 
-from flask import Flask, flash, redirect, render_template, request, session, url_for
 
 from site_coordination import db
 from site_coordination.db_tools import get_connection
@@ -34,18 +44,17 @@ def create_app() -> Flask:
 
     @app.get("/")
     def index() -> str:
-        base_url = os.environ.get("SITE_COORDINATION_BASE_URL")
-        if not base_url:
-            base_url = _resolve_base_url(request.host_url)
+        base_url = _get_base_url(request.host_url)
         base_url = base_url.strip()
         if not base_url.endswith("/"):
             base_url = f"{base_url}/"
         qr_code_data_uri = _build_qr_code_data_uri(base_url)
-        qr_code_image_url = qr_code_data_uri or _build_qr_code_image_url(base_url)
+        qr_download_url = url_for("qr_code_png")
         return render_template(
             "index.html",
             base_url=base_url,
-            qr_code_image_url=qr_code_image_url,
+            qr_code_data_uri=qr_code_data_uri,
+            qr_download_url=qr_download_url,
         )
 
     @app.post("/select")
@@ -66,6 +75,27 @@ def create_app() -> Flask:
     @app.get("/bookings")
     def bookings() -> str:
         return render_template("bookings.html")
+
+    @app.get("/qr.png")
+    def qr_code_png() -> Response:
+        base_url = _get_base_url(request.host_url)
+        base_url = base_url.strip()
+        if not base_url.endswith("/"):
+            base_url = f"{base_url}/"
+        qr_data = _build_qr_code_data_uri(base_url)
+        if not qr_data:
+            return Response(
+                "QR code generation requires qrcode[pil]. Install dependencies and retry.",
+                status=503,
+                mimetype="text/plain",
+            )
+        image_bytes = base64.b64decode(qr_data.split(",", 1)[1])
+        return send_file(
+            io.BytesIO(image_bytes),
+            mimetype="image/png",
+            as_attachment=True,
+            download_name="checkin-qr.png",
+        )
 
     @app.route("/login", methods=["GET", "POST"])
     def login() -> str:
@@ -190,11 +220,11 @@ def _build_qr_code_data_uri(url: str) -> str | None:
     return f"data:image/png;base64,{encoded}"
 
 
-def _build_qr_code_image_url(url: str) -> str:
-    return (
-        "https://chart.googleapis.com/chart?cht=qr&chs=180x180&chld=L|0&chl="
-        + quote_plus(url)
-    )
+def _get_base_url(request_url: str) -> str:
+    base_url = os.environ.get("SITE_COORDINATION_BASE_URL")
+    if base_url:
+        return base_url
+    return _resolve_base_url(request_url)
 
 
 def _resolve_base_url(request_url: str) -> str:
