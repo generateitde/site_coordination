@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, Tuple
 from zoneinfo import ZoneInfo
+from urllib.parse import quote_plus
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 
@@ -39,10 +40,11 @@ def create_app() -> Flask:
         if not base_url.endswith("/"):
             base_url = f"{base_url}/"
         qr_code_data_uri = _build_qr_code_data_uri(base_url)
+        qr_code_image_url = qr_code_data_uri or _build_qr_code_image_url(base_url)
         return render_template(
             "index.html",
             base_url=base_url,
-            qr_code_data_uri=qr_code_data_uri,
+            qr_code_image_url=qr_code_image_url,
         )
 
     @app.post("/select")
@@ -185,6 +187,13 @@ def _build_qr_code_data_uri(url: str) -> str | None:
     qr_image.save(buffer, format="PNG")
     encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
     return f"data:image/png;base64,{encoded}"
+
+
+def _build_qr_code_image_url(url: str) -> str:
+    return (
+        "https://chart.googleapis.com/chart?cht=qr&chs=180x180&chld=L|0&chl="
+        + quote_plus(url)
+    )
 
 
 if __name__ == "__main__":

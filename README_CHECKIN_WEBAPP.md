@@ -45,8 +45,8 @@
   (for example, `http://192.168.1.50:5001/`) so other devices can scan the code.
   Ensure the app is running with `host=0.0.0.0` (default in `run_check_in_rcs_app.py`)
   and that your firewall allows inbound traffic on the port.
-- The QR code is generated server-side when the optional `qrcode[pil]` dependency is installed;
-  if it's not available, the page falls back to the bundled client-side generator.
+- If you want a purely local QR code (no external service), install `qrcode[pil]` and the server
+  will embed a PNG. Otherwise the app falls back to a hosted QR image (requires internet access).
 
 ## Troubleshooting
 
