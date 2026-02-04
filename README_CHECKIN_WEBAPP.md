@@ -36,11 +36,23 @@
    table in `site_coordination.sqlite`.
 3. **Page 3 (Check-in/Check-out):** Choose the dropdown value and click **Send** to store the entry in
    `activity_research`.
+4. **Service provider check-in:** Fill out name, company, mobile, service, and check-in/out to store
+   entries in `activity_service_provider`.
+5. **Day pass:** On check-in, a day pass PDF is shown and can be downloaded.
 
 ## Notes
 
 - Failed logins show an error message.
 - For production, set `SITE_COORDINATION_SECRET`.
+- For a local network demo QR code, set `SITE_COORDINATION_BASE_URL` to your LAN IP
+  (for example, `http://192.168.1.50:5001/`) so other devices can scan the code.
+  Ensure the app is running with `host=0.0.0.0` (default in `run_check_in_rcs_app.py`)
+  and that your firewall allows inbound traffic on the port.
+- Install dependencies (`pip install -r requirements.txt`) so the server can generate and embed
+  the QR code PNG via `qrcode[pil]`.
+- If `SITE_COORDINATION_BASE_URL` is not set and the app is opened via localhost, the check-in app
+  attempts to resolve your LAN IP automatically so the QR code points at a reachable address.
+- The selection page includes a download button for the QR code PNG at `/qr.png`.
 
 ## Troubleshooting
 
