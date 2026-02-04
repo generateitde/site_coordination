@@ -3,10 +3,16 @@
 from __future__ import annotations
 
 import os
+import base64
+import importlib
+import importlib.util
+import io
+import socket
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Tuple
 from zoneinfo import ZoneInfo
+from urllib.parse import quote_plus
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 
@@ -28,7 +34,19 @@ def create_app() -> Flask:
 
     @app.get("/")
     def index() -> str:
-        return render_template("index.html")
+        base_url = os.environ.get("SITE_COORDINATION_BASE_URL")
+        if not base_url:
+            base_url = _resolve_base_url(request.host_url)
+        base_url = base_url.strip()
+        if not base_url.endswith("/"):
+            base_url = f"{base_url}/"
+        qr_code_data_uri = _build_qr_code_data_uri(base_url)
+        qr_code_image_url = qr_code_data_uri or _build_qr_code_image_url(base_url)
+        return render_template(
+            "index.html",
+            base_url=base_url,
+            qr_code_image_url=qr_code_image_url,
+        )
 
     @app.post("/select")
     def select_role():
@@ -159,6 +177,53 @@ def _ensure_database() -> None:
         db.init_db(connection)
         db.ensure_users_credentials_column(connection)
         db.ensure_activity_research_name_columns(connection)
+
+
+def _build_qr_code_data_uri(url: str) -> str | None:
+    if importlib.util.find_spec("qrcode") is None:
+        return None
+    qrcode = importlib.import_module("qrcode")
+    qr_image = qrcode.make(url)
+    buffer = io.BytesIO()
+    qr_image.save(buffer, format="PNG")
+    encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    return f"data:image/png;base64,{encoded}"
+
+
+def _build_qr_code_image_url(url: str) -> str:
+    return (
+        "https://chart.googleapis.com/chart?cht=qr&chs=180x180&chld=L|0&chl="
+        + quote_plus(url)
+    )
+
+
+def _resolve_base_url(request_url: str) -> str:
+    if "127.0.0.1" in request_url or "localhost" in request_url:
+        resolved = _local_network_url(request_url)
+        if resolved:
+            return resolved
+    return request_url
+
+
+def _local_network_url(request_url: str) -> str | None:
+    try:
+        host = request_url.split("//", 1)[1].split("/", 1)[0]
+        port = host.split(":", 1)[1] if ":" in host else "5000"
+    except IndexError:
+        port = "5000"
+    ip = _get_lan_ip()
+    if not ip:
+        return None
+    return f"http://{ip}:{port}/"
+
+
+def _get_lan_ip() -> str | None:
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.connect(("8.8.8.8", 80))
+            return sock.getsockname()[0]
+    except OSError:
+        return None
 
 
 if __name__ == "__main__":
