@@ -15,4 +15,10 @@
       <button type="submit" class="button">Continue</button>
     </form>
   </section>
+  <section class="card qr-card">
+    <h2>QR Code</h2>
+    <p class="meta">Scan the code to open the Check-In webapp on this device.</p>
+    <img class="qr-code" src="{{ qr_code_image_url }}" alt="QR code for {{ base_url }}" />
+    <p class="meta qr-url">{{ base_url }}</p>
+  </section>
 {% endblock %}
