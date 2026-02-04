@@ -6,6 +6,17 @@
     <p class="meta">
       Select an email and optional time range to analyze bookings and activities.
     </p>
+    <div class="chart-controls">
+      <span class="meta">Chart type</span>
+      <label class="radio">
+        <input type="radio" name="chart_type" value="line" checked />
+        Line
+      </label>
+      <label class="radio">
+        <input type="radio" name="chart_type" value="bar" />
+        Bar
+      </label>
+    </div>
     <form method="post" class="form">
       <label class="field">
         Email (optional)
@@ -72,6 +83,20 @@
         </ul>
       </div>
     </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h4>Weekly booking totals</h4>
+        <canvas id="weekly-bookings-chart" height="220"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4>Weekly conflicts</h4>
+        <canvas id="weekly-conflicts-chart" height="220"></canvas>
+      </div>
+      <div class="chart-card">
+        <h4>Projects by week</h4>
+        <canvas id="projects-by-week-chart" height="240"></canvas>
+      </div>
+    </div>
   </section>
 
   <section class="card">
@@ -84,6 +109,12 @@
         <li class="meta">No activity entries available.</li>
       {% endfor %}
     </ul>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h4>Activities by user</h4>
+        <canvas id="user-activity-chart" height="240"></canvas>
+      </div>
+    </div>
   </section>
 
   <section class="card">
@@ -116,7 +147,167 @@
         <li class="meta">No service activity entries available.</li>
       {% endfor %}
     </ul>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h4>Service provider activities</h4>
+        <canvas id="service-activity-chart" height="240"></canvas>
+      </div>
+    </div>
   </section>
 
   <a class="link" href="{{ url_for('index') }}">Back to dashboard</a>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const weekCounts = {{ booking_summary.week_counts | tojson }};
+    const weekConflicts = {{ booking_summary.conflicts | tojson }};
+    const weekProjects = {{ booking_summary.week_projects | tojson }};
+    const userActivity = {{ user_activity.per_user | tojson }};
+    const serviceActivity = {{ service_activity.per_service | tojson }};
+
+    const weeks = Object.keys(weekCounts);
+    const weekTotals = weeks.map((week) => weekCounts[week]);
+    const conflictTotals = weeks.map((week) => weekConflicts[week] || 0);
+
+    const projects = Array.from(
+      new Set(
+        Object.values(weekProjects).flatMap((projectMap) => Object.keys(projectMap)),
+      ),
+    );
+    const projectDatasets = projects.map((project, index) => ({
+      label: project,
+      data: weeks.map((week) => (weekProjects[week] ? weekProjects[week][project] || 0 : 0)),
+      borderWidth: 2,
+      backgroundColor: `hsla(${(index * 65) % 360}, 70%, 55%, 0.35)`,
+      borderColor: `hsl(${(index * 65) % 360}, 70%, 45%)`,
+      tension: 0.35,
+    }));
+
+    const userLabels = Object.keys(userActivity);
+    const userTotals = userLabels.map((email) => userActivity[email]);
+    const serviceLabels = Object.keys(serviceActivity);
+    const serviceTotals = serviceLabels.map((service) => serviceActivity[service]);
+
+    const baseOptions = {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: true,
+          position: "bottom",
+        },
+      },
+    };
+
+    const charts = [];
+
+    const weeklyBookingsChart = new Chart(
+      document.getElementById("weekly-bookings-chart"),
+      {
+        type: "line",
+        data: {
+          labels: weeks,
+          datasets: [
+            {
+              label: "Bookings",
+              data: weekTotals,
+              borderWidth: 2,
+              backgroundColor: "rgba(11, 79, 162, 0.2)",
+              borderColor: "rgba(11, 79, 162, 1)",
+              tension: 0.35,
+            },
+          ],
+        },
+        options: baseOptions,
+      },
+    );
+    charts.push(weeklyBookingsChart);
+
+    const weeklyConflictsChart = new Chart(
+      document.getElementById("weekly-conflicts-chart"),
+      {
+        type: "line",
+        data: {
+          labels: weeks,
+          datasets: [
+            {
+              label: "Conflicts",
+              data: conflictTotals,
+              borderWidth: 2,
+              backgroundColor: "rgba(180, 35, 24, 0.2)",
+              borderColor: "rgba(180, 35, 24, 1)",
+              tension: 0.35,
+            },
+          ],
+        },
+        options: baseOptions,
+      },
+    );
+    charts.push(weeklyConflictsChart);
+
+    const projectsByWeekChart = new Chart(
+      document.getElementById("projects-by-week-chart"),
+      {
+        type: "line",
+        data: {
+          labels: weeks,
+          datasets: projectDatasets,
+        },
+        options: baseOptions,
+      },
+    );
+    charts.push(projectsByWeekChart);
+
+    const userActivityChart = new Chart(
+      document.getElementById("user-activity-chart"),
+      {
+        type: "line",
+        data: {
+          labels: userLabels,
+          datasets: [
+            {
+              label: "Activities",
+              data: userTotals,
+              borderWidth: 2,
+              backgroundColor: "rgba(11, 79, 162, 0.2)",
+              borderColor: "rgba(11, 79, 162, 1)",
+              tension: 0.35,
+            },
+          ],
+        },
+        options: baseOptions,
+      },
+    );
+    charts.push(userActivityChart);
+
+    const serviceActivityChart = new Chart(
+      document.getElementById("service-activity-chart"),
+      {
+        type: "line",
+        data: {
+          labels: serviceLabels,
+          datasets: [
+            {
+              label: "Activities",
+              data: serviceTotals,
+              borderWidth: 2,
+              backgroundColor: "rgba(0, 133, 95, 0.2)",
+              borderColor: "rgba(0, 133, 95, 1)",
+              tension: 0.35,
+            },
+          ],
+        },
+        options: baseOptions,
+      },
+    );
+    charts.push(serviceActivityChart);
+
+    const chartTypeInputs = document.querySelectorAll("input[name='chart_type']");
+    chartTypeInputs.forEach((input) =>
+      input.addEventListener("change", (event) => {
+        charts.forEach((chart) => {
+          chart.config.type = event.target.value;
+          chart.update();
+        });
+      }),
+    );
+  </script>
 {% endblock %}
