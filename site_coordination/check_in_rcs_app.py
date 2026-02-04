@@ -28,7 +28,13 @@ def create_app() -> Flask:
 
     @app.get("/")
     def index() -> str:
-        return render_template("index.html")
+        base_url = os.environ.get("SITE_COORDINATION_BASE_URL")
+        if not base_url:
+            base_url = request.host_url
+        base_url = base_url.strip()
+        if not base_url.endswith("/"):
+            base_url = f"{base_url}/"
+        return render_template("index.html", base_url=base_url)
 
     @app.post("/select")
     def select_role():
