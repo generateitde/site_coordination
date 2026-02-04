@@ -47,6 +47,8 @@
   and that your firewall allows inbound traffic on the port.
 - If you want a purely local QR code (no external service), install `qrcode[pil]` and the server
   will embed a PNG. Otherwise the app falls back to a hosted QR image (requires internet access).
+- If `SITE_COORDINATION_BASE_URL` is not set and the app is opened via localhost, the check-in app
+  attempts to resolve your LAN IP automatically so the QR code points at a reachable address.
 
 ## Troubleshooting
 
