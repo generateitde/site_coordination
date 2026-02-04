@@ -184,3 +184,26 @@ body {
   font-size: 14px;
   color: #5d6470;
 }
+
+.stats-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.chart-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.chart-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
