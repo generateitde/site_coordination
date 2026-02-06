@@ -181,6 +181,62 @@ From the dashboard you can:
 
 > **Note:** Update the credentials in the `.env` file before using the IMAP/SMTP workflows.
 
+## Automatisierter Mailversand
+
+Der Mailversand wird über einen Power-Automate-Flow mit HTTP-Trigger ausgelöst. Python sendet
+den Token und die E-Mail-Daten an den Flow. Für den lokalen Start ist nur `FLOW_SECRET` in der
+`.env` nötig; die `FLOW_URL` ist als Konstante im Code hinterlegt.
+
+### Power Automate Flow Setup
+
+1. Erstelle einen **Instant Cloud Flow** mit **When an HTTP request is received**.
+2. Verwende folgendes **Request Body Schema**:
+   ```json
+   {
+     "type": "object",
+     "properties": {
+       "token": {"type":"string"},
+       "to": {"type":"string"},
+       "subject": {"type":"string"},
+       "body": {"type":"string"},
+       "contentType": {"type":"string"}
+     },
+     "required": ["token","to","subject","body"]
+   }
+   ```
+3. Füge eine **Condition** hinzu (Token-Check):
+   - Expression: `@not(equals(triggerBody()?['token'], '<SECRET>'))`
+   - **If true** → **Response** mit Status **401** (Unauthorized).
+4. Im **Else**-Zweig:
+   - Aktion **Send an email (V2)**:
+     - **To**: `@{triggerBody()?['to']}`
+     - **Subject**: `@{triggerBody()?['subject']}`
+     - **Body**: `@{triggerBody()?['body']}`
+     - **Is HTML**: `@equals(triggerBody()?['contentType'],'html')`
+
+> Hinweis: Ersetze `<SECRET>` im Flow durch denselben Wert wie `FLOW_SECRET` in der `.env`.
+
+### Lokale Schritte
+
+1. Virtuelle Umgebung erstellen (optional) und Abhängigkeiten installieren:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+2. `.env` anlegen:
+   ```bash
+   cp .env.example .env
+   ```
+3. `FLOW_SECRET` in `.env` setzen (muss mit dem Flow übereinstimmen).
+4. Web-App starten:
+   ```bash
+   python -m site_coordination.coordination_app
+   ```
+
+**Wichtig:** Die `FLOW_URL` ist in `src/email_automation/config.py` als Konstante hinterlegt.
+Wenn der Flow neu erstellt wird, muss die URL dort aktualisiert werden.
+
 ## Next Steps
 
 - Add a web UI for check-in/check-out (QR entry).

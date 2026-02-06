@@ -4,12 +4,19 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import sys
 from pathlib import Path
 from typing import Iterable, Optional
 
 from flask import Flask, flash, redirect, render_template, request, url_for
 from jinja2 import ChoiceLoader, FileSystemLoader
 
+BASE_DIR = Path(__file__).resolve().parents[1]
+SRC_DIR = BASE_DIR / "src"
+if SRC_DIR.exists():
+    sys.path.insert(0, str(SRC_DIR))
+
+from email_automation.service import on_send_email_click
 from site_coordination import db
 from site_coordination.config import load_smtp_config
 from site_coordination.db_tools import get_connection
@@ -527,8 +534,12 @@ def _send_booking_response(booking_id: int) -> None:
     else:
         flash("Booking must be approved or denied before sending a response.", "error")
         return
-    _send_booking_email(row["email"], row, action)
-    flash(f"Booking response sent to {row['email']}.", "success")
+    try:
+        on_send_email_click(booking_id)
+    except Exception as exc:
+        flash(f"Automated email failed: {exc}", "error")
+        return
+    flash(f"Automated email sent for booking {row['email']}.", "success")
 
 
 def _analysis_selections() -> Iterable[str]:

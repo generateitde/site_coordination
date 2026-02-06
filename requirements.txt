@@ -13,3 +13,7 @@ sqlalchemy>=2.0
 flask>=3.0
 qrcode[pil]>=7.4
 fpdf2>=2.7
+
+# Power Automate integration
+requests>=2.32
+python-dotenv>=1.0
