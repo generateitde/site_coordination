@@ -148,15 +148,21 @@ def create_app() -> Flask:
         if request.method == "POST":
             booking_id = request.form.get("booking_id", "")
             action = request.form.get("action", "")
+            send_response = request.form.get("send_response", "") == "yes"
             if booking_id and action == "approve":
                 _approve_booking(int(booking_id))
+                if send_response:
+                    _send_booking_response(int(booking_id))
             elif booking_id and action == "deny":
                 _deny_booking(int(booking_id))
+                if send_response:
+                    _send_booking_response(int(booking_id))
             elif booking_id and action == "send_response":
                 _send_booking_response(int(booking_id))
         query = request.args.get("q", "").strip()
         bookings_list = _fetch_bookings(query)
         status_labels = {
+            "pending_review": "Pending review",
             "zu_ueberpruefen": "Pending review",
             "gebucht": "Booked",
             "denied": "Denied",
