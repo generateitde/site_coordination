@@ -39,7 +39,7 @@
               </span>
             </td>
             <td>
-              {% if booking.status == "zu_ueberpruefen" %}
+              {% if booking.status in ["pending_review", "zu_ueberpruefen"] %}
                 <form method="post" class="inline-actions">
                   <input type="hidden" name="booking_id" value="{{ booking.id }}" />
                   <button class="button button-small" name="action" value="approve">
@@ -48,6 +48,10 @@
                   <button class="button button-small button-secondary" name="action" value="deny">
                     Deny
                   </button>
+                  <label class="checkbox">
+                    <input type="checkbox" name="send_response" value="yes" />
+                    Send email automatically
+                  </label>
                 </form>
               {% elif booking.status in ["gebucht", "denied"] %}
                 <a
