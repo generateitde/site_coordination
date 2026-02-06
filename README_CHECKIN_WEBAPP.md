@@ -4,7 +4,7 @@
 
 - Python 3.11+
 - Dependencies installed: `pip install -r requirements.txt`
-- SQLite database available (default: `database/site_coordination.sqlite`)
+- SQLite database available (default: `database/site_coordination.sqlite` relative to the project root)
 
 ## Start the webapp
 

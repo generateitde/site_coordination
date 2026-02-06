@@ -253,7 +253,8 @@ The repository includes a small Flask webapp for onsite check-in/check-out workf
    ```bash
    python -m site_coordination.cli init-db
    ```
-2. (Optional) Set `SITE_COORDINATION_DB` if the database is not in `database/`:
+2. (Optional) Set `SITE_COORDINATION_DB` if the database is not in `database/` (path is resolved from
+   the project root):
    ```bash
    export SITE_COORDINATION_DB=/path/to/site_coordination.sqlite
    ```
